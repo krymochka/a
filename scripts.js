@@ -128,4 +128,3 @@ function sendReferralLink() {
     const telegramUrl = `https://t.me/share/url?url=${encodeURIComponent(referralLink)}`;
     window.open(telegramUrl, '_blank'); // Открыть ссылку в новой вкладке
 }
-
