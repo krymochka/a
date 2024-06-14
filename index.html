@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fixi Game App</title>
+    <title>Game App</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@900&display=swap">
@@ -28,7 +28,7 @@
             <ul class="list-group">
                 <li class="list-group-item d-flex justify-content-between align-items-center">
                     Subscribe to our Telegram Channel
-                    <button class="btn btn-primary btn-sm" onclick="confirmSubscription()">Subscribe</button>
+                    <a href="https://t.me/fixicoin" target="_blank" class="btn btn-primary btn-sm" onclick="confirmSubscription()">Subscribe</a>
                 </li>
             </ul>
         </div>
@@ -42,7 +42,7 @@
                 <div class="input-group mb-3">
                     <input type="text" class="form-control" id="referral-link-display" readonly>
                     <div class="input-group-append">
-                        <button class="btn btn-outline-secondary" type="button" onclick="copyReferralLink()">Copy Link</button>
+                        <button class="btn btn-outline-secondary" type="button" onclick="copyReferralLink()">Link</button>
                         <button class="btn btn-outline-secondary" type="button" onclick="sendReferralLink()">Send</button>
                     </div>
                 </div>
@@ -64,6 +64,20 @@
         particlesJS.load('particles-js', 'particles.json', function() {
             console.log('particles.js loaded - callback');
         });
+
+        // Parse URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const userId = urlParams.get('user_id');
+        const username = urlParams.get('username');
+        const photoUrl = urlParams.get('photo_url');
+
+        // Set user information
+        if (username) {
+            document.getElementById('user-name').textContent = username;
+        }
+        if (photoUrl) {
+            document.getElementById('user-avatar').src = photoUrl;
+        }
     </script>
 </body>
 </html>
