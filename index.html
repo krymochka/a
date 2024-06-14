@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game App</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@900&display=swap">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+    <div id="particles-js"></div>
+    <div class="container mt-5">
+        <!-- Main Page -->
+        <div id="main-page" class="page active">
+            <h1>Main Page</h1>
+            <div class="info-box">
+                <img id="user-avatar" src="" alt="User Avatar" class="avatar">
+                <p id="user-name">Username</p>
+                <p><span class="balance-icon">F</span> Balance: <span id="balance">0</span> coins</p>
+            </div>
+        </div>
+
+        <!-- Tasks Page -->
+        <div id="tasks-page" class="page">
+            <h1>Tasks</h1>
+            <ul class="list-group">
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    Subscribe to our Telegram Channel
+                    <a href="https://t.me/FixiCoin_Bot" target="_blank" class="btn btn-primary btn-sm" onclick="confirmSubscription()">Subscribe</a>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Referral Page -->
+        <div id="referral-page" class="page">
+            <h1>Referrals</h1>
+            <p>Invite your friends and earn rewards!</p>
+            <div class="referral">
+                <p>Your referral link:</p>
+                <div class="input-group mb-3">
+                    <input type="text" class="form-control" id="referral-link-display" readonly>
+                    <div class="input-group-append">
+                        <button class="btn btn-outline-secondary" type="button" onclick="copyReferralLink()">Copy Link</button>
+                        <button class="btn btn-outline-secondary" type="button" onclick="sendReferralLink()">Send</button>
+                    </div>
+                </div>
+                <p>Referred friends:</p>
+                <ul id="referrals-list" class="list-group"></ul>
+            </div>
+        </div>
+
+        <!-- Navigation Bar -->
+        <div class="navbar fixed-bottom bg-dark d-flex justify-content-around">
+            <button class="nav-button" id="main-link"><i class="fas fa-home"></i></button>
+            <button class="nav-button" id="tasks-link"><i class="fas fa-tasks"></i></button>
+            <button class="nav-button" id="referral-link"><i class="fas fa-user-friends"></i></button>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+    <script src="scripts.js"></script>
+    <script>
+        particlesJS.load('particles-js', 'particles.json', function() {
+            console.log('particles.js loaded - callback');
+        });
+    </script>
+</body>
+</html>
