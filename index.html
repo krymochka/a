@@ -42,8 +42,8 @@
                 <div class="input-group mb-3">
                     <input type="text" class="form-control" id="referral-link-display" readonly>
                     <div class="input-group-append">
-                        <button class="btn btn-outline-secondary" type="button" onclick="copyReferralLink()">Link</button>
-                        <button class="btn btn-outline-secondary" type="button" onclick="sendReferralLink()">Send</button>
+                        <button class="btn btn-outline-secondary" type="button" onclick="copyReferralLink()">Copy Link</button>
+                        <button class="btn btn-outline-secondary" type="button" onclick="sendReferralLink()">Send to Telegram</button>
                     </div>
                 </div>
                 <p>Referred friends:</p>
@@ -78,6 +78,69 @@
         if (photoUrl) {
             document.getElementById('user-avatar').src = photoUrl;
         }
+        
+        // Генерация реферальной ссылки
+        function generateReferralLink(userId) {
+            const referralLink = `https://t.me/FixiCoin_Bot/app?startapp=ref_${userId}`;
+            document.getElementById('referral-link-display').value = referralLink;
+        }
+
+        // Копирование реферальной ссылки
+        function copyReferralLink() {
+            const referralLink = document.getElementById('referral-link-display');
+            referralLink.select();
+            referralLink.setSelectionRange(0, 99999); // Для мобильных устройств
+            document.execCommand('copy');
+            alert("Referral link copied to clipboard!");
+        }
+
+        // Отправка реферальной ссылки в Telegram
+        function sendReferralLink() {
+            const referralLink = document.getElementById('referral-link-display').value;
+            const telegramUrl = `https://t.me/share/url?url=${encodeURIComponent(referralLink)}`;
+            window.open(telegramUrl, '_blank'); // Открыть ссылку в новой вкладке
+        }
+
+        // Подтверждение подписки
+        function confirmSubscription() {
+            alert("Please confirm your subscription in the Telegram channel.");
+            // Здесь должна быть логика для проверки подписки пользователя
+            setTimeout(function() {
+                alert("Subscription confirmed! You have earned 10 coins.");
+                updateBalance(10);
+            }, 5000);
+        }
+
+        // Обновление баланса
+        function updateBalance(amount) {
+            const balanceElement = document.getElementById('balance');
+            let currentBalance = parseInt(balanceElement.innerText);
+            balanceElement.innerText = currentBalance + amount;
+        }
+
+        // Функция для отображения страницы
+        function showPage(pageId) {
+            const pages = document.querySelectorAll('.page');
+            pages.forEach(page => {
+                page.classList.remove('active');
+            });
+            document.getElementById(pageId).classList.add('active');
+        }
+
+        // Отслеживание кликов по кнопкам навигации
+        document.getElementById('main-link').addEventListener('click', function() {
+            showPage('main-page');
+        });
+        document.getElementById('tasks-link').addEventListener('click', function() {
+            showPage('tasks-page');
+        });
+        document.getElementById('referral-link').addEventListener('click', function() {
+            showPage('referral-page');
+            generateReferralLink(userId);
+        });
+
+        // Инициализация страницы по умолчанию
+        showPage('main-page');
     </script>
 </body>
 </html>
