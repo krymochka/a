@@ -125,7 +125,6 @@
         }
 
         function generateReferralLink() {
-            const userId = new URLSearchParams(window.location.search).get('user_id'); // Получение user_id из URL параметров
             const referralLink = `https://t.me/FixiCoin_Bot/app?startapp=ref_${userId}`;
             document.getElementById('referral-link-display').value = referralLink;
             // Логика для отображения рефералов
@@ -169,21 +168,6 @@
                 ticketsContainer.appendChild(ticket);
             });
         }
-
-        // Set user information from URL parameters
-        const urlParams = new URLSearchParams(window.location.search);
-        const userId = urlParams.get('user_id');
-        const username = urlParams.get('username');
-        const photoUrl = urlParams.get('photo_url');
-
-        if (username) {
-            document.getElementById('user-name').textContent = username;
-        }
-        if (photoUrl) {
-            document.getElementById('user-avatar').src = photoUrl;
-        }
-
-        generateReferralLink(userId);
     </script>
 </body>
 </html>
