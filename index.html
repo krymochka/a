@@ -21,7 +21,9 @@
                 <p><span class="balance-icon">F</span> Balance: <span id="balance">0</span> coins</p>
             </div>
             <div class="game-box">
-                <p>Drop game</p>
+                <p>Lucky game</p>
+                <p>Cost: 1 ticket</p>
+                <p>Tickets: <span id="tickets">0</span></p>
                 <button class="btn btn-primary btn-sm" onclick="showPage('lucky-game-page')">Play</button>
             </div>
         </div>
@@ -32,7 +34,25 @@
             <div id="tickets-container" class="d-flex flex-wrap justify-content-center">
                 <!-- Билетики будут добавлены здесь с помощью JavaScript -->
             </div>
-            <button class="btn btn-primary mt-3" onclick="playGame()">Play</button>
+            <button class="btn btn-primary mt-3" onclick="startLuckyGame()">Play</button>
+        </div>
+
+        <!-- Tasks Page -->
+        <div id="tasks-page" class="page">
+            <h1>Tasks Page</h1>
+            <p>Here you can see and complete tasks to earn more tickets and coins.</p>
+        </div>
+
+        <!-- Referral Page -->
+        <div id="referral-page" class="page">
+            <h1>Referral Page</h1>
+            <p>Invite friends and earn tickets and coins!</p>
+            <div class="input-group">
+                <input type="text" id="referral-link-display" class="form-control" readonly>
+                <div class="input-group-append">
+                    <button class="btn btn-primary" onclick="copyReferralLink()">Copy</button>
+                </div>
+            </div>
         </div>
 
         <!-- Navigation Bar -->
@@ -124,7 +144,7 @@
         }
 
         // Lucky Game Logic
-        function playGame() {
+        function startLuckyGame() {
             const ticketValues = [20, 20, 50, 50, 50, 50, 100, 100, 100, 300, 500, 1000];
             const shuffledValues = ticketValues.sort(() => Math.random() - 0.5);
             const ticketsContainer = document.getElementById('tickets-container');
