@@ -20,35 +20,19 @@
                 <p id="user-name">Username</p>
                 <p><span class="balance-icon">F</span> Balance: <span id="balance">0</span> coins</p>
             </div>
-        </div>
-
-        <!-- Tasks Page -->
-        <div id="tasks-page" class="page">
-            <h1>Tasks</h1>
-            <ul class="list-group">
-                <li class="list-group-item d-flex justify-content-between align-items-center">
-                    Subscribe to our Telegram Channel
-                    <a href="https://t.me/fixicoin" target="_blank" class="btn btn-primary btn-sm" onclick="confirmSubscription()">Subscribe</a>
-                </li>
-            </ul>
-        </div>
-
-        <!-- Referral Page -->
-        <div id="referral-page" class="page">
-            <h1>Referrals</h1>
-            <p>Invite your friends and earn rewards!</p>
-            <div class="referral">
-                <p>Your referral link:</p>
-                <div class="input-group mb-3">
-                    <input type="text" class="form-control" id="referral-link-display" readonly>
-                    <div class="input-group-append">
-                        <button class="btn btn-outline-secondary" type="button" onclick="copyReferralLink()">Copy Link</button>
-                        <button class="btn btn-outline-secondary" type="button" onclick="sendReferralLink()">Send Link</button>
-                    </div>
-                </div>
-                <p>Referred friends:</p>
-                <ul id="referrals-list" class="list-group"></ul>
+            <div class="game-box">
+                <p>Drop game</p>
+                <button class="btn btn-primary btn-sm" onclick="showPage('lucky-game-page')">Play</button>
             </div>
+        </div>
+
+        <!-- Lucky Game Page -->
+        <div id="lucky-game-page" class="page">
+            <h1>Lucky Game</h1>
+            <div id="tickets-container" class="d-flex flex-wrap justify-content-center">
+                <!-- Билетики будут добавлены здесь с помощью JavaScript -->
+            </div>
+            <button class="btn btn-primary mt-3" onclick="playGame()">Play</button>
         </div>
 
         <!-- Navigation Bar -->
@@ -79,10 +63,88 @@
             document.getElementById('user-avatar').src = photoUrl;
         }
 
-        // Generate referral link
-        if (userId) {
-            const referralLink = `https://t.me/FixiCoin_Bot?start=ref_${userId}`;
+        document.addEventListener('DOMContentLoaded', (event) => {
+            document.getElementById('main-link').addEventListener('click', function() {
+                showPage('main-page');
+            });
+
+            document.getElementById('tasks-link').addEventListener('click', function() {
+                showPage('tasks-page');
+            });
+
+            document.getElementById('referral-link').addEventListener('click', function() {
+                showPage('referral-page');
+            });
+
+            generateReferralLink();
+        });
+
+        function showPage(pageId) {
+            const pages = document.querySelectorAll('.page');
+            pages.forEach(page => {
+                page.classList.remove('active');
+            });
+            document.getElementById(pageId).classList.add('active');
+        }
+
+        function confirmSubscription() {
+            alert("Please confirm your subscription in the Telegram channel.");
+            // Здесь должна быть логика для проверки подписки пользователя
+            setTimeout(function() {
+                alert("Subscription confirmed! You have earned 10 coins.");
+                updateBalance(10);
+            }, 5000);
+        }
+
+        function updateBalance(amount) {
+            const balanceElement = document.getElementById('balance');
+            let currentBalance = parseInt(balanceElement.innerText);
+            balanceElement.innerText = currentBalance + amount;
+        }
+
+        function generateReferralLink() {
+            const userId = new URLSearchParams(window.location.search).get('user_id'); // Получение user_id из URL параметров
+            const referralLink = `https://t.me/FixiCoin_Bot/app?startapp=ref_${userId}`;
             document.getElementById('referral-link-display').value = referralLink;
+            // Логика для отображения рефералов
+        }
+
+        function copyReferralLink() {
+            const referralLink = document.getElementById('referral-link-display');
+            referralLink.select();
+            referralLink.setSelectionRange(0, 99999); // Для мобильных устройств
+            document.execCommand('copy');
+            alert("Referral link copied to clipboard!");
+        }
+
+        function sendReferralLink() {
+            const referralLink = document.getElementById('referral-link-display').value;
+            const telegramUrl = `https://t.me/share/url?url=${encodeURIComponent(referralLink)}`;
+            window.open(telegramUrl, '_blank'); // Открыть ссылку в новой вкладке
+        }
+
+        // Lucky Game Logic
+        function playGame() {
+            const ticketValues = [20, 20, 50, 50, 50, 50, 100, 100, 100, 300, 500, 1000];
+            const shuffledValues = ticketValues.sort(() => Math.random() - 0.5);
+            const ticketsContainer = document.getElementById('tickets-container');
+
+            // Очистка контейнера
+            ticketsContainer.innerHTML = '';
+
+            // Создание билетиков
+            shuffledValues.forEach(value => {
+                const ticket = document.createElement('div');
+                ticket.classList.add('ticket');
+                ticket.innerText = value;
+                ticket.style.display = 'none';
+                ticket.onclick = function() {
+                    ticket.style.display = 'block';
+                    // Обновить баланс
+                    updateBalance(value);
+                };
+                ticketsContainer.appendChild(ticket);
+            });
         }
     </script>
 </body>

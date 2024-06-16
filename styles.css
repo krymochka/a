@@ -112,3 +112,43 @@ body {
 .input-group-append .btn:hover {
     background: linear-gradient(45deg, #1f4037, #99f2c8);
 }
+
+.ticket {
+    width: 80px;
+    height: 80px;
+    background: #fff;
+    color: #000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 10px;
+    margin: 10px;
+    cursor: pointer;
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.game-box {
+    background: linear-gradient(45deg, #1f4037, #99f2c8);
+    border-radius: 10px;
+    padding: 20px;
+    margin-top: 20px;
+}
+
+.game-box p {
+    font-size: 24px;
+    margin-bottom: 10px;
+}
+
+.game-box button {
+    background: #4ca1af;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 10px 20px;
+    font-size: 18px;
+}
+
+.game-box button:hover {
+    background: #3b8d99;
+}
