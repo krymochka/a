@@ -157,8 +157,9 @@
             shuffledValues.forEach(value => {
                 const ticket = document.createElement('div');
                 ticket.classList.add('ticket');
+                ticket.innerHTML = '🎫';
                 ticket.onclick = function() {
-                    if (!ticket.classList.contains('revealed')) {
+                    if (!ticket.classList.contains('revealed') && !ticket.classList.contains('disabled')) {
                         // Убираем возможность выбрать другие билетики
                         const allTickets = document.querySelectorAll('.ticket');
                         allTickets.forEach(t => t.classList.add('disabled'));
