@@ -22,8 +22,8 @@
             </div>
             <div class="game-box">
                 <p>Lucky game</p>
-                <p>Cost: 1 ticket</p>
-                <p>Tickets: <span id="tickets">0</span></p>
+                <p>🎟️: 1</p>
+                <p>🎫: <span id="tickets">0</span></p>
                 <button class="btn btn-primary btn-sm" onclick="showPage('lucky-game-page')">Play</button>
             </div>
         </div>
@@ -41,6 +41,7 @@
         <div id="tasks-page" class="page">
             <h1>Tasks Page</h1>
             <p>Here you can see and complete tasks to earn more tickets and coins.</p>
+            <button class="btn btn-primary mt-3" onclick="confirmSubscription()">Subscribe to Telegram</button>
         </div>
 
         <!-- Referral Page -->
@@ -51,6 +52,7 @@
                 <input type="text" id="referral-link-display" class="form-control" readonly>
                 <div class="input-group-append">
                     <button class="btn btn-primary" onclick="copyReferralLink()">Copy</button>
+                    <button class="btn btn-primary" onclick="sendReferralLink()">Send</button>
                 </div>
             </div>
         </div>
@@ -156,16 +158,32 @@
             shuffledValues.forEach(value => {
                 const ticket = document.createElement('div');
                 ticket.classList.add('ticket');
-                ticket.innerText = value;
-                ticket.style.display = 'none';
                 ticket.onclick = function() {
-                    ticket.style.display = 'block';
-                    // Обновить баланс
-                    updateBalance(value);
+                    if (!ticket.classList.contains('revealed')) {
+                        ticket.classList.add('revealed');
+                        ticket.innerText = value;
+                        // Обновить баланс
+                        updateBalance(value);
+                    }
                 };
                 ticketsContainer.appendChild(ticket);
             });
         }
+
+        // Set user information from URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const userId = urlParams.get('user_id');
+        const username = urlParams.get('username');
+        const photoUrl = urlParams.get('photo_url');
+
+        if (username) {
+            document.getElementById('user-name').textContent = username;
+        }
+        if (photoUrl) {
+            document.getElementById('user-avatar').src = photoUrl;
+        }
+
+        generateReferralLink(userId);
     </script>
 </body>
 </html>
