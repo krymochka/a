@@ -34,7 +34,7 @@
             <div id="tickets-container" class="d-flex flex-wrap justify-content-center">
                 <!-- Билетики будут добавлены здесь с помощью JavaScript -->
             </div>
-            <button class="btn btn-primary mt-3" onclick="startLuckyGame()">Play</button>
+            <button class="btn btn-primary mt-3" onclick="startLuckyGame()">Start</button>
         </div>
 
         <!-- Tasks Page -->
@@ -159,6 +159,10 @@
                 ticket.classList.add('ticket');
                 ticket.onclick = function() {
                     if (!ticket.classList.contains('revealed')) {
+                        // Убираем возможность выбрать другие билетики
+                        const allTickets = document.querySelectorAll('.ticket');
+                        allTickets.forEach(t => t.classList.add('disabled'));
+
                         ticket.classList.add('revealed');
                         ticket.innerText = value;
                         // Обновить баланс
