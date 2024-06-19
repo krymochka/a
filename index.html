@@ -105,16 +105,46 @@
             opacity: 1;
             transform: translate(-50%, -50%) scale(1.5);
         }
+
+        .profile-info {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px;
+            background-color: #000;
+            color: #fff;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+
+        .profile-info img {
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+        }
+
+        .profile-info .username {
+            flex-grow: 1;
+            margin-left: 10px;
+        }
+
+        .profile-info .balance {
+            font-size: 1.2em;
+            margin-left: 10px;
+        }
     </style>
 </head>
 <body>
     <div id="particles-js"></div>
     <div class="container mt-5">
         <div id="main-page" class="page active">
+            <div class="profile-info">
+                <img id="user-avatar" src="" alt="User Avatar">
+                <span class="username" id="user-name">yarik.</span>
+                <span class="balance">450F</span>
+            </div>
             <h1>Main</h1>
             <div class="info-box">
-                <img id="user-avatar" src="" alt="User Avatar" class="avatar mb-3">
-                <p id="user-name">Username</p>
                 <p><span class="balance-icon">F</span> <span id="balance">0</span> coins</p>
                 <p>🎫 <span id="tickets">3</span></p>
             </div>
@@ -221,7 +251,7 @@
         }
 
         function generateReferralLink() {
-            const referralLink = `https://example.com/referral?user_id=${userId}`;
+            const referralLink = `https://t.me/FixiCoin_Bot/referral?user_id=${userId}`;
             document.getElementById('referral-link-display').value = referralLink;
         }
 
