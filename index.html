@@ -165,8 +165,8 @@
             document.getElementById('user-avatar').src = photoUrl;
         }
 
-        // Initialize user with 3 tickets if not already set in localStorage
-        let userTickets = localStorage.getItem('tickets') ? parseInt(localStorage.getItem('tickets')) : 3;
+        // Initialize user with 3 tickets
+        let userTickets = 3;
         updateTicketsDisplay(userTickets);
 
         document.addEventListener('DOMContentLoaded', (event) => {
@@ -225,6 +225,7 @@
         function generateReferralLink() {
             const referralLink = `https://t.me/FixiCoin_Bot/app?startapp=ref_${userId}`;
             document.getElementById('referral-link-display').value = referralLink;
+            // Логика для отображения рефералов
         }
 
         function copyReferralLink() {
@@ -241,15 +242,13 @@
             window.open(telegramUrl, '_blank'); // Открыть ссылку в новой вкладке
         }
 
+        // Логика для мини-игры "Lucky Game"
         function startLuckyGame() {
             if (userTickets >= 1) {
-                userTickets--;
-                updateTicketsDisplay(userTickets);
                 const ticketValues = [20, 20, 50, 50, 50, 50, 100, 100, 100, 300, 500, 1000];
                 const shuffledValues = ticketValues.sort(() => Math.random() - 0.5);
                 const ticketsContainer = document.getElementById('tickets-container');
-                const balanceElement = document.getElementById('balance');
-                let remainingTickets = shuffledValues.length;
+                let ticketSelected = false;
 
                 // Очистка контейнера
                 ticketsContainer.innerHTML = '';
@@ -260,22 +259,29 @@
                     ticket.classList.add('ticket');
                     ticket.innerHTML = '🎫';
                     ticket.onclick = function() {
-                        if (!ticket.classList.contains('revealed') && !ticket.classList.contains('disabled')) {
+                        if (!ticket.classList.contains('revealed') && !ticket.classList.contains('disabled') && !ticketSelected) {
                             ticket.classList.add('revealed');
                             ticket.innerText = value;
-                            // Обновить баланс
-                            updateBalance(value);
-                            remainingTickets--;
+                            ticketSelected = true;
 
-                            // Если все билетики выбраны, блокируем остальные
-                            if (remainingTickets === 0) {
-                                const allTickets = document.querySelectorAll('.ticket');
-                                allTickets.forEach(t => {
-                                    if (!t.classList.contains('revealed')) {
-                                        t.classList.add('disabled');
-                                    }
-                                });
-                            }
+                            // Блокировка остальных билетов
+                            const allTickets = document.querySelectorAll('.ticket');
+                            allTickets.forEach(t => {
+                                if (!t.classList.contains('revealed')) {
+                                    t.classList.add('disabled');
+                                }
+                            });
+
+                            // Уменьшаем количество билетов пользователя на 1
+                            userTickets--;
+                            updateTicketsDisplay(userTickets);
+                            localStorage.setItem('tickets', userTickets); // Сохранение количества билетов в localStorage
+
+                            // Обновление баланса и перенаправление на главную страницу
+                            updateBalance(value);
+                            setTimeout(function() {
+                                location.reload(); // Перезагрузка страницы для отображения обновленного баланса и количества билетов
+                            }, 1000);
                         }
                     };
                     ticketsContainer.appendChild(ticket);
@@ -285,7 +291,7 @@
             }
         }
 
-        // Load saved balance and tickets on page load
+        // Загрузка данных из localStorage при загрузке страницы
         document.addEventListener('DOMContentLoaded', (event) => {
             const savedBalance = localStorage.getItem('balance');
             const savedTickets = localStorage.getItem('tickets');
