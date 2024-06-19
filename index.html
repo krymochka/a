@@ -242,49 +242,57 @@
 
     // Логика для мини-игры "Lucky Game"
     function startLuckyGame() {
-        if (userTickets >= 1) {
-            const ticketValues = [20, 20, 50, 50, 50, 50, 100, 100, 100, 300, 500, 1000];
-            const shuffledValues = ticketValues.sort(() => Math.random() - 0.5);
-            const ticketsContainer = document.getElementById('tickets-container');
-            let ticketSelected = false;
+            if (userTickets >= 1) {
+                const ticketValues = [20, 20, 50, 50, 50, 50, 100, 100, 100, 300, 500, 1000];
+                const shuffledValues = ticketValues.sort(() => Math.random() - 0.5);
+                const ticketsContainer = document.getElementById('tickets-container');
+                let ticketSelected = false;
 
-            // Очистка контейнера
-            ticketsContainer.innerHTML = '';
+                // Очистка контейнера
+                ticketsContainer.innerHTML = '';
 
-            // Создание билетов
-            shuffledValues.forEach(value => {
-                const ticket = document.createElement('div');
-                ticket.classList.add('ticket');
-                ticket.innerHTML = '🎫';
-                ticket.onclick = function() {
-                    if (!ticket.classList.contains('revealed') && !ticket.classList.contains('disabled') && !ticketSelected) {
-                        ticket.classList.add('revealed');
-                        ticket.innerText = value;
-                        ticketSelected = true;
+                // Создание билетиков
+                shuffledValues.forEach(value => {
+                    const ticket = document.createElement('div');
+                    ticket.classList.add('ticket');
+                    ticket.innerHTML = '🎫';
+                    ticket.onclick = function() {
+                        if (!ticket.classList.contains('revealed') && !ticket.classList.contains('disabled') && !ticketSelected) {
+                            ticket.classList.add('revealed');
+                            ticket.innerText = value;
+                            ticketSelected = true;
 
-                        // Обновить баланс
-                        updateBalance(value);
+                            // Блокировка остальных билетов
+                            const allTickets = document.querySelectorAll('.ticket');
+                            allTickets.forEach(t => {
+                                if (!t.classList.contains('revealed')) {
+                                    t.classList.add('disabled');
+                                }
+                            });
 
-                        // Добавить кнопку Confirm после выбора билета
-                        const confirmButton = document.createElement('button');
-                        confirmButton.textContent = 'Confirm';
-                        confirmButton.classList.add('btn', 'btn-primary', 'mt-3', 'btn-confirm');
-                        confirmButton.onclick = function() {
-                            showPage('main-page');
+                            // Уменьшаем количество билетов пользователя на 1
                             userTickets--;
                             updateTicketsDisplay(userTickets);
-                            ticketSelected = false;
-                            ticketsContainer.innerHTML = '';
-                        };
-                        ticketsContainer.appendChild(confirmButton);
-                    }
-                };
-                ticketsContainer.appendChild(ticket);
-            });
-        } else {
-            alert('You need more tickets to play the game!');
+
+                            // Добавляем кнопку Confirm
+                            const confirmButton = document.createElement('button');
+                            confirmButton.textContent = 'Confirm';
+                            confirmButton.classList.add('btn', 'btn-primary', 'mt-3');
+                            confirmButton.onclick = function() {
+                                updateBalance(value);
+                                showPage('main-page');
+                                ticketSelected = false;
+                                ticketsContainer.innerHTML = '';
+                            };
+                            ticketsContainer.appendChild(confirmButton);
+                        }
+                    };
+                    ticketsContainer.appendChild(ticket);
+                });
+            } else {
+                alert('You need more tickets to play the game!');
+            }
         }
-    }
 </script>
 </body>
 </html>
