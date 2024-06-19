@@ -28,8 +28,10 @@
             text-align: center;
             background-color: rgba(0, 0, 0, 0.2);
             display: flex;
-            justify-content: space-between;
+            flex-direction: column;
+            justify-content: center;
             align-items: center;
+            position: relative;
         }
 
         .info-box {
@@ -162,6 +164,16 @@
             width: 100%;
             max-width: 800px;
         }
+
+        .ticket-balance {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 1em;
+            background-color: #fff;
+            padding: 5px 10px;
+            border-radius: 5px;
+        }
     </style>
 </head>
 <body>
@@ -177,6 +189,7 @@
                 <div class="game-container">
                     <div class="game-box">
                         <h1>Lucky Game</h1>
+                        <div class="ticket-balance">🎫 <span id="tickets">3</span></div>
                         <button class="play-button" onclick="showPage('lucky-game-page')">
                             <i class="fas fa-play"></i>
                         </button>
@@ -254,10 +267,7 @@
 
         document.getElementById('main-link').addEventListener('click', () => showPage('main-page'));
         document.getElementById('tasks-link').addEventListener('click', () => showPage('tasks-page'));
-        document.getElementById('referral-link').addEventListener('click', () => {
-            showPage('referral-page');
-            generateReferralLink();
-        });
+        document.getElementById('referral-link').addEventListener('click', () => showPage('referral-page'));
 
         function showPage(pageId) {
             const pages = document.querySelectorAll('.page');
