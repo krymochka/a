@@ -275,6 +275,7 @@
                             // Уменьшаем количество билетов пользователя на 1
                             userTickets--;
                             updateTicketsDisplay(userTickets);
+                            localStorage.setItem('tickets', userTickets); // Сохранение количества билетов в localStorage
 
                             // Обновление баланса и перенаправление на главную страницу
                             updateBalance(value);
