@@ -4,108 +4,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Game App</title>
-    <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&display=swap">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         body {
             font-family: 'Orbitron', sans-serif;
-            background-color: #f8f9fa;
-            color: #343a40;
+            background-color: #1a1a1a;
+            color: #fff;
         }
 
-        h1 {
-            font-weight: 700;
-            color: #6c757d;
-        }
-
-        .game-box {
-            border: 2px solid #6c757d;
+        .container {
+            max-width: 960px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #333;
             border-radius: 10px;
-            padding: 40px;
-            margin-top: 20px;
-            text-align: center;
-            background-color: rgba(0, 0, 0, 0.2);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            position: relative;
-        }
-
-        .info-box {
-            text-align: center;
-        }
-
-        .info-box p {
-            font-size: 1.2em;
-            margin: 0.5em 0;
-        }
-
-        .balance-icon {
-            font-weight: 900;
-            font-size: 1.5em;
-            color: #6c757d;
-        }
-
-        .task-info {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-top: 20px;
-        }
-
-        .task-info p {
-            margin: 0;
-            font-size: 1.2em;
-        }
-
-        .navbar {
-            padding: 10px;
-        }
-
-        .btn-confirm {
-            display: none;
-        }
-
-        .page {
-            display: none;
-        }
-
-        .page.active {
-            display: block;
-        }
-
-        .ticket {
-            cursor: pointer;
-            font-size: 1.5em;
-            margin: 5px;
-            padding: 10px;
-            border: 2px solid red;
-            border-radius: 5px;
-            background-color: rgba(0, 0, 0, 0.2);
-            transition: transform 0.3s;
-        }
-
-        .ticket.revealed {
-            transform: scale(1.2);
-        }
-
-        .prize {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 2em;
-            color: gold;
-            opacity: 0;
-            transition: opacity 0.5s, transform 0.5s;
-        }
-
-        .prize.show {
-            opacity: 1;
-            transform: translate(-50%, -50%) scale(1.5);
         }
 
         .profile-info {
@@ -115,8 +28,8 @@
             padding: 10px;
             background-color: #000;
             color: #fff;
-            margin-bottom: 20px;
             border-radius: 5px;
+            margin-bottom: 20px;
         }
 
         .profile-info img {
@@ -126,117 +39,84 @@
         }
 
         .profile-info .username {
-            flex-grow: 1;
             margin-left: 10px;
-        }
-
-        .profile-info .balance {
             font-size: 1.2em;
-            margin-left: 10px;
         }
 
-        .play-button {
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5em;
-            background-color: #007bff;
+        .balance-ticket {
+            text-align: center;
+            background-color: #666;
             color: #fff;
-            border: none;
-            cursor: pointer;
+            padding: 10px;
+            margin-bottom: 20px;
+            border-radius: 5px;
         }
 
-        .play-button:hover {
-            background-color: #0056b3;
-        }
-
-        .centered-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: calc(100vh - 70px); /* Subtracting navbar height */
+        .balance-ticket p {
+            margin: 5px 0;
         }
 
         .game-container {
-            width: 100%;
-            max-width: 800px;
+            text-align: center;
+            background-color: #333;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 10px;
         }
 
-        .ticket-balance {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            font-size: 1em;
-            background-color: #fff;
-            padding: 5px 10px;
+        .game-container h2 {
+            font-size: 2em;
+            margin-bottom: 20px;
+            color: #fff;
+        }
+
+        .get-more-btn {
+            display: block;
+            width: 100%;
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .get-more-btn a {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: #fff;
+            text-decoration: none;
             border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+        .get-more-btn a:hover {
+            background-color: #0056b3;
         }
     </style>
 </head>
 <body>
-    <div id="particles-js"></div>
-    <div class="container mt-5">
-        <div id="main-page" class="page active">
-            <div class="profile-info">
-                <img id="user-avatar" src="" alt="User Avatar">
-                <span class="username" id="user-name">yarik.</span>
-                <span class="balance"><span id="balance">450</span>F</span>
-            </div>
-            <div class="centered-container">
-                <div class="game-container">
-                    <div class="game-box">
-                        <h1>Lucky Game</h1>
-                        <div class="ticket-balance">🎫 <span id="tickets">3</span></div>
-                        <button class="play-button" onclick="showPage('lucky-game-page')">
-                            <i class="fas fa-play"></i>
-                        </button>
-                    </div>
-                </div>
-            </div>
+    <div class="container">
+        <div class="profile-info">
+            <img id="user-avatar" src="" alt="User Avatar">
+            <span class="username" id="user-name">yarik.</span>
+            <p class="balance-ticket">Balance: <span id="balance">450F</span></p>
         </div>
 
-        <div id="lucky-game-page" class="page">
-            <h1>Lucky Game</h1>
+        <div class="game-container">
+            <h2>Lucky Game</h2>
             <div id="tickets-container" class="d-flex flex-wrap justify-content-center">
+                <!-- Mini-game content here -->
+            </div>
+            <div class="balance-ticket">
+                <p><i class="fas fa-ticket-alt"></i> <span id="tickets">3</span> Tickets</p>
             </div>
             <button class="btn btn-primary mt-3" onclick="startLuckyGame()">Start</button>
         </div>
 
-        <div id="tasks-page" class="page">
-            <h1>Tasks</h1>
-            <p>Complete the tasks below to earn more tickets and coins.</p>
-            <div class="task-info">
-                <p>Subscribe to <a href="https://t.me/fixicoin" target="_blank">Fixicoin Telegram</a></p>
-                <p>🎫 1 &nbsp; <span class="balance-icon">F</span> 300 coins</p>
-            </div>
-            <button id="subscribe-button" class="btn btn-primary mt-3" onclick="confirmSubscription()">Confirm Subscription</button>
-        </div>
-
-        <div id="referral-page" class="page">
-            <h1>Referral</h1>
-            <p>Invite friends and earn tickets and coins!</p>
-            <div class="input-group">
-                <input type="text" id="referral-link-display" class="form-control" readonly>
-                <div class="input-group-append">
-                    <button class="btn btn-primary" onclick="copyReferralLink()">Copy</button>
-                    <button class="btn btn-primary" onclick="sendReferralLink()">Send</button>
-                </div>
-            </div>
-        </div>
-
-        <div class="navbar fixed-bottom bg-dark d-flex justify-content-around">
-            <button class="nav-button" id="main-link"><i class="fas fa-home"></i></button>
-            <button class="nav-button" id="tasks-link"><i class="fas fa-tasks"></i></button>
-            <button class="nav-button" id="referral-link"><i class="fas fa-user-friends"></i></button>
+        <div class="get-more-btn">
+            <a href="referral-page.html">Get more</a>
         </div>
     </div>
 
-    <div id="prize-display" class="prize"></div>
-
-    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/particles.js/2.0.0/particles.min.js"></script>
     <script src="scripts.js"></script>
     <script>
         particlesJS.load('particles-js', 'particles.json', function() {
@@ -265,49 +145,10 @@
             }
         });
 
-        document.getElementById('main-link').addEventListener('click', () => showPage('main-page'));
-        document.getElementById('tasks-link').addEventListener('click', () => showPage('tasks-page'));
-        document.getElementById('referral-link').addEventListener('click', () => showPage('referral-page'));
-
-        function showPage(pageId) {
-            const pages = document.querySelectorAll('.page');
-            pages.forEach(page => {
-                if (page.id === pageId) {
-                    page.classList.add('active');
-                } else {
-                    page.classList.remove('active');
-                }
-            });
-        }
-
-        function confirmSubscription() {
-            document.getElementById('subscribe-button').disabled = true;
-            document.getElementById('subscribe-button').innerText = 'Confirmed!';
-            setTimeout(() => {
-                alert("Subscription confirmed! You earned 300 coins and 1 ticket.");
-                userTickets++;
-                updateBalance(300);
-                updateTicketsDisplay(userTickets);
-            }, 3000);
-        }
-
-        function generateReferralLink() {
-            const referralLink = `https://t.me/FixiCoin_Bot/referral?user_id=${userId}`;
-            document.getElementById('referral-link-display').value = referralLink;
-        }
-
-        function copyReferralLink() {
-            const referralLink = document.getElementById('referral-link-display');
-            referralLink.select();
-            referralLink.setSelectionRange(0, 99999);
-            document.execCommand('copy');
-            alert("Referral link copied to clipboard!");
-        }
-
-        function sendReferralLink() {
-            const referralLink = document.getElementById('referral-link-display').value;
-            const telegramUrl = `https://t.me/share/url?url=${encodeURIComponent(referralLink)}`;
-            window.open(telegramUrl, '_blank');
+        function updateTicketsDisplay(tickets) {
+            const ticketsElement = document.getElementById('tickets');
+            ticketsElement.innerText = tickets;
+            localStorage.setItem('tickets', tickets);
         }
 
         function startLuckyGame() {
@@ -345,19 +186,6 @@
             }
         }
 
-        function updateBalance(amount) {
-            const balanceElement = document.getElementById('balance');
-            let currentBalance = parseInt(balanceElement.innerText);
-            balanceElement.innerText = currentBalance + amount;
-            localStorage.setItem('balance', balanceElement.innerText);
-        }
-
-        function updateTicketsDisplay(tickets) {
-            const ticketsElement = document.getElementById('tickets');
-            ticketsElement.innerText = tickets;
-            localStorage.setItem('tickets', tickets);
-        }
-
         function showPrize(prize) {
             const prizeDisplay = document.getElementById('prize-display');
             prizeDisplay.innerText = prize;
@@ -367,6 +195,13 @@
                 prizeDisplay.classList.remove('show');
                 updateBalance(prize);
             }, 2000);
+        }
+
+        function updateBalance(amount) {
+            const balanceElement = document.getElementById('balance');
+            let currentBalance = parseInt(balanceElement.innerText);
+            balanceElement.innerText = currentBalance + amount;
+            localStorage.setItem('balance', balanceElement.innerText);
         }
     </script>
 </body>
