@@ -39,7 +39,7 @@
         <div id="tasks-page" class="page">
             <h1>Tasks Page</h1>
             <p>Here you can see and complete tasks to earn more tickets and coins.</p>
-            <button class="btn btn-primary mt-3" onclick="confirmSubscription()">Subscribe to Newsletter</button>
+            <button class="btn btn-primary mt-3" onclick="confirmSubscription()">Subscribe to Telegram</button>
         </div>
 
         <!-- Referral Page -->
@@ -198,6 +198,7 @@
                             confirmButton.onclick = function() {
                                 updateBalance(value);
                                 showPage('main-page');
+                                resetGame();
                             };
                             ticketsContainer.appendChild(confirmButton);
                         }
@@ -207,6 +208,11 @@
             } else {
                 alert("You don't have enough tickets to play. Earn more tickets by subscribing or completing tasks!");
             }
+        }
+
+        function resetGame() {
+            document.getElementById('tickets-container').innerHTML = '';
+            showPage('main-page');
         }
     </script>
 </body>
