@@ -8,20 +8,49 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@900&display=swap">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        .game-box {
+            border: 2px solid #007bff;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            text-align: center;
+            background-color: #f9f9f9;
+        }
+
+        .info-box p {
+            font-size: 1.2em;
+            margin: 0.5em 0;
+        }
+
+        .task-info {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .task-info p {
+            margin: 0;
+        }
+
+        .navbar {
+            padding: 10px;
+        }
+    </style>
 </head>
 <body>
     <div id="particles-js"></div>
     <div class="container mt-5">
         <!-- Main Page -->
         <div id="main-page" class="page active">
-            <h1>Main Page</h1>
+            <h1>Main</h1>
             <div class="info-box">
                 <img id="user-avatar" src="" alt="User Avatar" class="avatar">
                 <p id="user-name">Username</p>
-                <p><span class="balance-icon">F</span> Balance: <span id="balance">0</span> coins</p>
+                <p>F <span id="balance">0</span> coins</p>
             </div>
             <div class="game-box">
-                <p>Balance of Tickets: <span id="tickets">3</span></p>
+                <p>🎫 <span id="tickets">3</span></p>
                 <button class="btn btn-primary btn-sm" onclick="showPage('lucky-game-page')">Play</button>
             </div>
         </div>
@@ -37,14 +66,18 @@
 
         <!-- Tasks Page -->
         <div id="tasks-page" class="page">
-            <h1>Tasks Page</h1>
-            <p>Here you can see and complete tasks to earn more tickets and coins.</p>
+            <h1>Tasks</h1>
+            <p>Complete the tasks below to earn more tickets and coins.</p>
+            <div class="task-info">
+                <p>Subscribe to <a href="https://t.me/fixicoin" target="_blank">Fixicoin Telegram</a></p>
+                <p>🎫 1 &nbsp; F 300 coins</p>
+            </div>
             <button class="btn btn-primary mt-3" onclick="confirmSubscription()">Subscribe to Telegram</button>
         </div>
 
         <!-- Referral Page -->
         <div id="referral-page" class="page">
-            <h1>Referral Page</h1>
+            <h1>Referral</h1>
             <p>Invite friends and earn tickets and coins!</p>
             <div class="input-group">
                 <input type="text" id="referral-link-display" class="form-control" readonly>
@@ -115,8 +148,8 @@
             alert("Please confirm your subscription in the Telegram channel.");
             // Здесь должна быть логика для проверки подписки пользователя
             setTimeout(function() {
-                alert("Subscription confirmed! You have earned 10 coins and 1 ticket.");
-                updateBalance(10);
+                alert("Subscription confirmed! You have earned 300 coins and 1 ticket.");
+                updateBalance(300);
                 addTicket();
             }, 5000);
         }
@@ -198,7 +231,8 @@
                             confirmButton.onclick = function() {
                                 updateBalance(value);
                                 showPage('main-page');
-                                resetGame();
+                                ticketSelected = false;
+                                ticketsContainer.innerHTML = '';
                             };
                             ticketsContainer.appendChild(confirmButton);
                         }
@@ -206,13 +240,8 @@
                     ticketsContainer.appendChild(ticket);
                 });
             } else {
-                alert("You don't have enough tickets to play. Earn more tickets by subscribing or completing tasks!");
+                alert('You need more tickets to play the game!');
             }
-        }
-
-        function resetGame() {
-            document.getElementById('tickets-container').innerHTML = '';
-            showPage('main-page');
         }
     </script>
 </body>
