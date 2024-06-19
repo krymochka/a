@@ -19,11 +19,11 @@
         h1 {
             font-family: 'Roboto', sans-serif;
             font-weight: 700;
-            color: #6c757d; /* Graphite color for headings */
+            color: #6c757d;
         }
 
         .game-box {
-            border: 2px solid #6c757d; /* Graphite color for border */
+            border: 2px solid #6c757d;
             border-radius: 10px;
             padding: 20px;
             margin-top: 20px;
@@ -44,7 +44,7 @@
             font-family: 'Roboto', sans-serif;
             font-weight: 900;
             font-size: 1.5em;
-            color: #6c757d; /* Graphite color for balance icon */
+            color: #6c757d;
         }
 
         .task-info {
@@ -80,16 +80,69 @@
             font-size: 1.5em;
             margin: 5px;
             padding: 10px;
-            border: 2px solid red; /* Red border for tickets */
+            border: 2px solid red;
             border-radius: 5px;
             background-color: rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s;
+        }
+
+        .ticket.revealed {
+            transform: scale(1.2);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+        }
+
+        .modal-content {
+            position: relative;
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 500px;
+            text-align: center;
+            animation: slide-in 0.5s;
+        }
+
+        @keyframes slide-in {
+            from {
+                top: -50%;
+                opacity: 0;
+            }
+            to {
+                top: 0;
+                opacity: 1;
+            }
+        }
+
+        .scratch-area {
+            position: relative;
+            width: 100%;
+            height: 200px;
+            background: #ccc;
+            overflow: hidden;
+        }
+
+        .scratch-area canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
         }
     </style>
 </head>
 <body>
     <div id="particles-js"></div>
     <div class="container mt-5">
-        <!-- Main Page -->
         <div id="main-page" class="page active">
             <h1>Main</h1>
             <div class="info-box">
@@ -104,16 +157,13 @@
             </div>
         </div>
 
-        <!-- Lucky Game Page -->
         <div id="lucky-game-page" class="page">
             <h1>Lucky Game</h1>
             <div id="tickets-container" class="d-flex flex-wrap justify-content-center">
-                <!-- Tickets will be added here dynamically -->
             </div>
             <button class="btn btn-primary mt-3" onclick="startLuckyGame()">Start</button>
         </div>
 
-        <!-- Tasks Page -->
         <div id="tasks-page" class="page">
             <h1>Tasks</h1>
             <p>Complete the tasks below to earn more tickets and coins.</p>
@@ -124,7 +174,6 @@
             <button id="subscribe-button" class="btn btn-primary mt-3" onclick="confirmSubscription()">Confirm Subscription</button>
         </div>
 
-        <!-- Referral Page -->
         <div id="referral-page" class="page">
             <h1>Referral</h1>
             <p>Invite friends and earn tickets and coins!</p>
@@ -137,13 +186,23 @@
             </div>
         </div>
 
-        <!-- Navigation Bar -->
         <div class="navbar fixed-bottom bg-dark d-flex justify-content-around">
             <button class="nav-button" id="main-link"><i class="fas fa-home"></i></button>
             <button class="nav-button" id="tasks-link"><i class="fas fa-tasks"></i></button>
             <button class="nav-button" id="referral-link"><i class="fas fa-user-friends"></i></button>
         </div>
     </div>
+
+    <div id="ticket-modal" class="modal">
+        <div class="modal-content">
+            <h2>Scratch to reveal your prize!</h2>
+            <div class="scratch-area" id="scratch-area">
+                <canvas id="scratch-canvas"></canvas>
+                <div id="prize-text"></div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
     <script src="scripts.js"></script>
     <script>
@@ -151,13 +210,11 @@
             console.log('particles.js loaded - callback');
         });
 
-        // Parse URL parameters
         const urlParams = new URLSearchParams(window.location.search);
         const userId = urlParams.get('user_id');
         const username = urlParams.get('username');
         const photoUrl = urlParams.get('photo_url');
 
-        // Set user information
         if (username) {
             document.getElementById('user-name').textContent = username;
         }
@@ -165,72 +222,54 @@
             document.getElementById('user-avatar').src = photoUrl;
         }
 
-        // Initialize user with 3 tickets if not already set in localStorage
         let userTickets = localStorage.getItem('tickets') ? parseInt(localStorage.getItem('tickets')) : 3;
         updateTicketsDisplay(userTickets);
 
         document.addEventListener('DOMContentLoaded', (event) => {
-            document.getElementById('main-link').addEventListener('click', function() {
-                showPage('main-page');
-            });
+            const savedBalance = localStorage.getItem('balance');
+            if (savedBalance) {
+                document.getElementById('balance').innerText = savedBalance;
+            }
+        });
 
-            document.getElementById('tasks-link').addEventListener('click', function() {
-                showPage('tasks-page');
-            });
-
-            document.getElementById('referral-link').addEventListener('click', function() {
-                showPage('referral-page');
-            });
-
+        document.getElementById('main-link').addEventListener('click', () => showPage('main-page'));
+        document.getElementById('tasks-link').addEventListener('click', () => showPage('tasks-page'));
+        document.getElementById('referral-link').addEventListener('click', () => {
+            showPage('referral-page');
             generateReferralLink();
         });
 
         function showPage(pageId) {
             const pages = document.querySelectorAll('.page');
             pages.forEach(page => {
-                page.classList.remove('active');
+                if (page.id === pageId) {
+                    page.classList.add('active');
+                } else {
+                    page.classList.remove('active');
+                }
             });
-            document.getElementById(pageId).classList.add('active');
         }
 
         function confirmSubscription() {
-            alert("Please confirm your subscription in the Telegram channel.");
-            // Subscription logic
-            setTimeout(function() {
-                alert("Subscription confirmed! You have earned 300 coins and 1 ticket.");
+            document.getElementById('subscribe-button').disabled = true;
+            document.getElementById('subscribe-button').innerText = 'Confirmed!';
+            setTimeout(() => {
+                alert("Subscription confirmed! You earned 300 coins and 1 ticket.");
+                userTickets++;
                 updateBalance(300);
-                addTicket();
-                document.getElementById('subscribe-button').style.display = 'none';
-            }, 5000);
-        }
-
-        function updateBalance(amount) {
-            const balanceElement = document.getElementById('balance');
-            let currentBalance = parseInt(balanceElement.innerText);
-            balanceElement.innerText = currentBalance + amount;
-            localStorage.setItem('balance', balanceElement.innerText); // Сохранить баланс в localStorage
-        }
-
-        function updateTicketsDisplay(tickets) {
-            const ticketsElement = document.getElementById('tickets');
-            ticketsElement.innerText = tickets;
-            localStorage.setItem('tickets', tickets); // Сохранить количество билетов в localStorage
-        }
-
-        function addTicket() {
-            userTickets++;
-            updateTicketsDisplay(userTickets);
+                updateTicketsDisplay(userTickets);
+            }, 3000);
         }
 
         function generateReferralLink() {
-            const referralLink = `https://t.me/FixiCoin_Bot/app?startapp=ref_${userId}`;
+            const referralLink = `https://t.me/FixiCoin_Bot/referral?user_id=${userId}`;
             document.getElementById('referral-link-display').value = referralLink;
         }
 
         function copyReferralLink() {
             const referralLink = document.getElementById('referral-link-display');
             referralLink.select();
-            referralLink.setSelectionRange(0, 99999); // Для мобильных устройств
+            referralLink.setSelectionRange(0, 99999);
             document.execCommand('copy');
             alert("Referral link copied to clipboard!");
         }
@@ -238,7 +277,7 @@
         function sendReferralLink() {
             const referralLink = document.getElementById('referral-link-display').value;
             const telegramUrl = `https://t.me/share/url?url=${encodeURIComponent(referralLink)}`;
-            window.open(telegramUrl, '_blank'); // Открыть ссылку в новой вкладке
+            window.open(telegramUrl, '_blank');
         }
 
         function startLuckyGame() {
@@ -250,10 +289,8 @@
                 const shuffledValues = ticketValues.sort(() => Math.random() - 0.5);
                 const ticketsContainer = document.getElementById('tickets-container');
 
-                // Очистка контейнера
                 ticketsContainer.innerHTML = '';
 
-                // Создание билетиков
                 shuffledValues.forEach(value => {
                     const ticket = document.createElement('div');
                     ticket.classList.add('ticket');
@@ -261,11 +298,8 @@
                     ticket.onclick = function() {
                         if (!ticket.classList.contains('revealed') && !ticket.classList.contains('disabled')) {
                             ticket.classList.add('revealed');
-                            ticket.innerText = value;
-                            // Обновить баланс
-                            updateBalance(value);
+                            showModal(value);
 
-                            // Блокировать остальные билетики
                             const allTickets = document.querySelectorAll('.ticket');
                             allTickets.forEach(t => {
                                 if (!t.classList.contains('revealed')) {
@@ -281,18 +315,62 @@
             }
         }
 
-        // Load saved balance and tickets on page load
-        document.addEventListener('DOMContentLoaded', (event) => {
-            const savedBalance = localStorage.getItem('balance');
-            const savedTickets = localStorage.getItem('tickets');
-            if (savedBalance) {
-                document.getElementById('balance').innerText = savedBalance;
+        function updateBalance(amount) {
+            const balanceElement = document.getElementById('balance');
+            let currentBalance = parseInt(balanceElement.innerText);
+            balanceElement.innerText = currentBalance + amount;
+            localStorage.setItem('balance', balanceElement.innerText);
+        }
+
+        function updateTicketsDisplay(tickets) {
+            const ticketsElement = document.getElementById('tickets');
+            ticketsElement.innerText = tickets;
+            localStorage.setItem('tickets', tickets);
+        }
+
+        function showModal(prize) {
+            const modal = document.getElementById('ticket-modal');
+            const prizeText = document.getElementById('prize-text');
+            const scratchCanvas = document.getElementById('scratch-canvas');
+            const scratchArea = document.getElementById('scratch-area');
+
+            prizeText.innerText = prize;
+            modal.style.display = 'block';
+
+            scratchCanvas.width = scratchArea.offsetWidth;
+            scratchCanvas.height = scratchArea.offsetHeight;
+
+            const ctx = scratchCanvas.getContext('2d');
+            ctx.fillStyle = '#888';
+            ctx.fillRect(0, 0, scratchCanvas.width, scratchCanvas.height);
+
+            scratchCanvas.addEventListener('mousedown', startScratching);
+            scratchCanvas.addEventListener('mouseup', stopScratching);
+            scratchCanvas.addEventListener('mousemove', scratch);
+
+            let isScratching = false;
+
+            function startScratching() {
+                isScratching = true;
             }
-            if (savedTickets) {
-                userTickets = parseInt(savedTickets);
-                updateTicketsDisplay(userTickets);
+
+            function stopScratching() {
+                isScratching = false;
             }
-        });
+
+            function scratch(e) {
+                if (!isScratching) return;
+
+                const rect = scratchCanvas.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+
+                ctx.globalCompositeOperation = 'destination-out';
+                ctx.beginPath();
+                ctx.arc(x, y, 20, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
     </script>
 </body>
 </html>
