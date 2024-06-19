@@ -56,104 +56,62 @@ body {
     font-weight: 900;
     color: #4ca1af;
     font-size: 20px;
-    margin-right: 5px;
-}
-
-.navbar {
-    position: fixed;
-    bottom: 0;
-    width: 100%;
-    max-width: 500px;
-    display: flex;
-    justify-content: space-around;
-    background-color: rgba(0, 0, 0, 0.8);
-    border-top: 1px solid #ddd;
-    padding: 10px 0;
-}
-
-.nav-button {
-    font-size: 24px;
-    cursor: pointer;
-    color: white;
-    background: none;
-    border: none;
-}
-
-.nav-button:focus {
-    outline: none;
-}
-
-.list-group-item {
-    background: linear-gradient(45deg, #1f4037, #99f2c8);
-    color: white;
-    margin: 10px 0;
-    border-radius: 5px;
-}
-
-.list-group-item a {
-    color: white;
-    text-decoration: none;
-    font-weight: bold;
-}
-
-.list-group-item a:hover {
-    color: #d4f1c5;
-}
-
-.input-group-append .btn {
-    border-radius: 0 5px 5px 0;
-    background: linear-gradient(45deg, #1f4037, #99f2c8);
-    color: white;
-}
-
-.input-group-append .btn:hover {
-    background: linear-gradient(45deg, #1f4037, #99f2c8);
-}
-
-.ticket {
-    width: 60px;
-    height: 60px;
-    background: #f39c12;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    border-radius: 10px;
-    margin: 5px;
-    cursor: pointer;
-    font-size: 24px;
-}
-
-.ticket.revealed {
-    background: #4ca1af;
-    color: white;
-}
-
-.ticket.disabled {
-    cursor: not-allowed;
-    opacity: 0.5;
 }
 
 .game-box {
-    background: rgba(255, 255, 255, 0.2);
-    border-radius: 10px;
-    padding: 20px;
-    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 20px;
 }
 
-.game-box p {
-    font-size: 18px;
-    margin-bottom: 10px;
-}
-
-.game-box button {
-    background: #4ca1af;
+.ticket {
+    width: 50px;
+    height: 50px;
+    background-color: #4ca1af;
     color: white;
-    border: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 5px;
     border-radius: 5px;
-    padding: 10px 20px;
-    font-size: 16px;
+    cursor: pointer;
 }
 
-.game-box button:hover {
-    background: #3b8d99;
+.ticket.revealed {
+    background-color: #ffa726;
+}
+
+.navbar {
+    display: flex;
+    justify-content: space-around;
+    background-color: #4ca1af;
+    padding: 10px;
+    border-radius: 5px;
+}
+
+.nav-button {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 20px;
+    cursor: pointer;
+}
+
+.nav-button:hover {
+    color: #ffa726;
+}
+
+.input-group {
+    display: flex;
+}
+
+.input-group .form-control {
+    border-top-left-radius: 5px;
+    border-bottom-left-radius: 5px;
+}
+
+.input-group .input-group-append .btn {
+    border-top-right-radius: 5px;
+    border-bottom-right-radius: 5px;
 }
