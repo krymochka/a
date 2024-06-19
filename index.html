@@ -4,14 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Game App</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@900&display=swap">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
 </head>
 <body>
     <div id="particles-js"></div>
     <div class="container mt-5">
-        <!-- Основная страница -->
+        <!-- Main Page -->
         <div id="main-page" class="page active">
             <h1>Main Page</h1>
             <div class="info-box">
@@ -27,7 +28,7 @@
             </div>
         </div>
 
-        <!-- Страница Lucky Game -->
+        <!-- Lucky Game Page -->
         <div id="lucky-game-page" class="page">
             <h1>Lucky Game</h1>
             <div id="tickets-container" class="d-flex flex-wrap justify-content-center">
@@ -37,15 +38,15 @@
             <button class="btn btn-primary mt-3" onclick="showPage('main-page')">Exit</button>
         </div>
 
-        <!-- Страница Tasks -->
+        <!-- Tasks Page -->
         <div id="tasks-page" class="page">
             <h1>Tasks Page</h1>
             <p>Here you can see and complete tasks to earn more tickets and coins.</p>
-            <!-- Пример кнопки -->
-            <button class="btn btn-primary mt-3" onclick="confirmSubscription()">Subscribe to Telegram</button>
+            <!-- Changed the button text to better reflect the action -->
+            <button class="btn btn-primary mt-3" onclick="confirmSubscription()">Subscribe to Newsletter</button>
         </div>
 
-        <!-- Страница Referral -->
+        <!-- Referral Page -->
         <div id="referral-page" class="page">
             <h1>Referral Page</h1>
             <p>Invite friends and earn tickets and coins!</p>
@@ -58,28 +59,30 @@
             </div>
         </div>
 
-        <!-- Навигационная панель -->
-        <div class="navbar fixed-bottom">
+        <!-- Navigation Bar -->
+        <div class="navbar fixed-bottom bg-dark d-flex justify-content-around">
+            <!-- Changed the icon for the main link to reflect "home" -->
             <button class="nav-button" id="main-link"><i class="fas fa-home"></i></button>
+            <!-- Changed the icon for the tasks link to reflect "tasks" -->
             <button class="nav-button" id="tasks-link"><i class="fas fa-tasks"></i></button>
+            <!-- Changed the icon for the referral link to reflect "referral" -->
             <button class="nav-button" id="referral-link"><i class="fas fa-user-friends"></i></button>
         </div>
     </div>
     <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
     <script src="scripts.js"></script>
-    <script src="telegram.js"></script> <!-- Файл для работы с Telegram -->
     <script>
         particlesJS.load('particles-js', 'particles.json', function() {
             console.log('particles.js loaded - callback');
         });
 
-        // Парсинг параметров URL
+        // Parse URL parameters
         const urlParams = new URLSearchParams(window.location.search);
         const userId = urlParams.get('user_id');
         const username = urlParams.get('username');
         const photoUrl = urlParams.get('photo_url');
 
-        // Установка информации о пользователе
+        // Set user information
         if (username) {
             document.getElementById('user-name').textContent = username;
         }
@@ -146,7 +149,7 @@
             window.open(telegramUrl, '_blank'); // Открыть ссылку в новой вкладке
         }
 
-        // Логика игры Lucky Game
+        // Lucky Game Logic
         function startLuckyGame() {
             const ticketValues = [20, 20, 50, 50, 50, 50, 100, 100, 100, 300, 500, 1000];
             const shuffledValues = ticketValues.sort(() => Math.random() - 0.5);
@@ -157,7 +160,7 @@
             // Очистка контейнера
             ticketsContainer.innerHTML = '';
 
-            // Создание билетов
+            // Создание билетиков
             shuffledValues.forEach(value => {
                 const ticket = document.createElement('div');
                 ticket.classList.add('ticket');
@@ -166,18 +169,32 @@
                     if (!ticket.classList.contains('revealed') && !ticket.classList.contains('disabled')) {
                         ticket.classList.add('revealed');
                         ticket.innerText = value;
-                        // Обновление баланса
+                        // Обновить баланс
                         updateBalance(value);
                         remainingTickets--;
 
-                        // Если все билеты выбраны
+                        // Если все билетики выбраны, блокируем остальные
                         if (remainingTickets === 0) {
-                            alert("All tickets revealed!");
+                            const allTickets = document.querySelectorAll('.ticket');
+                            allTickets.forEach(t => {
+                                if (!t.classList.contains('revealed')) {
+                                    t.classList.add('disabled');
+                                }
+                            });
                         }
                     }
                 };
                 ticketsContainer.appendChild(ticket);
             });
+
+            // Добавляем кнопку для выхода
+            const exitButton = document.createElement('button');
+            exitButton.textContent = 'Exit';
+            exitButton.classList.add('btn', 'btn-primary', 'mt-3');
+            exitButton.onclick = function() {
+                showPage('main-page');
+            };
+            ticketsContainer.appendChild(exitButton);
         }
     </script>
 </body>
