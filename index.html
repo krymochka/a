@@ -90,53 +90,20 @@
             transform: scale(1.2);
         }
 
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            overflow: auto;
-            background-color: rgba(0,0,0,0.4);
-        }
-
-        .modal-content {
-            position: relative;
-            background-color: #fefefe;
-            margin: 15% auto;
-            padding: 20px;
-            border: 1px solid #888;
-            width: 80%;
-            max-width: 500px;
-            text-align: center;
-            animation: slide-in 0.5s;
-        }
-
-        @keyframes slide-in {
-            from {
-                top: -50%;
-                opacity: 0;
-            }
-            to {
-                top: 0;
-                opacity: 1;
-            }
-        }
-
-        .scratch-area {
-            position: relative;
-            width: 100%;
-            height: 200px;
-            background: #ccc;
-            overflow: hidden;
-        }
-
-        .scratch-area canvas {
+        .prize {
             position: absolute;
-            top: 0;
-            left: 0;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 2em;
+            color: gold;
+            opacity: 0;
+            transition: opacity 0.5s, transform 0.5s;
+        }
+
+        .prize.show {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1.5);
         }
     </style>
 </head>
@@ -193,15 +160,7 @@
         </div>
     </div>
 
-    <div id="ticket-modal" class="modal">
-        <div class="modal-content">
-            <h2>Scratch to reveal your prize!</h2>
-            <div class="scratch-area" id="scratch-area">
-                <canvas id="scratch-canvas"></canvas>
-                <div id="prize-text"></div>
-            </div>
-        </div>
-    </div>
+    <div id="prize-display" class="prize"></div>
 
     <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
     <script src="scripts.js"></script>
@@ -262,7 +221,7 @@
         }
 
         function generateReferralLink() {
-            const referralLink = `https://t.me/FixiCoin_Bot/referral?user_id=${userId}`;
+            const referralLink = `https://example.com/referral?user_id=${userId}`;
             document.getElementById('referral-link-display').value = referralLink;
         }
 
@@ -298,7 +257,7 @@
                     ticket.onclick = function() {
                         if (!ticket.classList.contains('revealed') && !ticket.classList.contains('disabled')) {
                             ticket.classList.add('revealed');
-                            showModal(value);
+                            showPrize(value);
 
                             const allTickets = document.querySelectorAll('.ticket');
                             allTickets.forEach(t => {
@@ -328,48 +287,15 @@
             localStorage.setItem('tickets', tickets);
         }
 
-        function showModal(prize) {
-            const modal = document.getElementById('ticket-modal');
-            const prizeText = document.getElementById('prize-text');
-            const scratchCanvas = document.getElementById('scratch-canvas');
-            const scratchArea = document.getElementById('scratch-area');
+        function showPrize(prize) {
+            const prizeDisplay = document.getElementById('prize-display');
+            prizeDisplay.innerText = prize;
+            prizeDisplay.classList.add('show');
 
-            prizeText.innerText = prize;
-            modal.style.display = 'block';
-
-            scratchCanvas.width = scratchArea.offsetWidth;
-            scratchCanvas.height = scratchArea.offsetHeight;
-
-            const ctx = scratchCanvas.getContext('2d');
-            ctx.fillStyle = '#888';
-            ctx.fillRect(0, 0, scratchCanvas.width, scratchCanvas.height);
-
-            scratchCanvas.addEventListener('mousedown', startScratching);
-            scratchCanvas.addEventListener('mouseup', stopScratching);
-            scratchCanvas.addEventListener('mousemove', scratch);
-
-            let isScratching = false;
-
-            function startScratching() {
-                isScratching = true;
-            }
-
-            function stopScratching() {
-                isScratching = false;
-            }
-
-            function scratch(e) {
-                if (!isScratching) return;
-
-                const rect = scratchCanvas.getBoundingClientRect();
-                const x = e.clientX - rect.left;
-                const y = e.clientY - rect.top;
-
-                ctx.globalCompositeOperation = 'destination-out';
-                ctx.beginPath();
-                ctx.arc(x, y, 20, 0, Math.PI * 2);
-                ctx.fill();
-            }
+            setTimeout(() => {
+                prizeDisplay.classList.remove('show');
+                updateBalance(prize);
+            }, 2000);
         }
     </script>
 </body>
