@@ -21,9 +21,7 @@
                 <p><span class="balance-icon">F</span> Balance: <span id="balance">0</span> coins</p>
             </div>
             <div class="game-box">
-                <p>Lucky game</p>
-                <p>🎟️: 1</p>
-                <p>🎫: <span id="tickets">0</span></p>
+                <p>Balance of Tickets: <span id="tickets">3</span></p>
                 <button class="btn btn-primary btn-sm" onclick="showPage('lucky-game-page')">Play</button>
             </div>
         </div>
@@ -42,7 +40,6 @@
         <div id="tasks-page" class="page">
             <h1>Tasks Page</h1>
             <p>Here you can see and complete tasks to earn more tickets and coins.</p>
-            <!-- Changed the button text to better reflect the action -->
             <button class="btn btn-primary mt-3" onclick="confirmSubscription()">Subscribe to Newsletter</button>
         </div>
 
@@ -61,11 +58,8 @@
 
         <!-- Navigation Bar -->
         <div class="navbar fixed-bottom bg-dark d-flex justify-content-around">
-            <!-- Changed the icon for the main link to reflect "home" -->
             <button class="nav-button" id="main-link"><i class="fas fa-home"></i></button>
-            <!-- Changed the icon for the tasks link to reflect "tasks" -->
             <button class="nav-button" id="tasks-link"><i class="fas fa-tasks"></i></button>
-            <!-- Changed the icon for the referral link to reflect "referral" -->
             <button class="nav-button" id="referral-link"><i class="fas fa-user-friends"></i></button>
         </div>
     </div>
@@ -89,6 +83,10 @@
         if (photoUrl) {
             document.getElementById('user-avatar').src = photoUrl;
         }
+
+        // Initialize user with 3 tickets
+        let userTickets = 3;
+        updateTicketsDisplay(userTickets);
 
         document.addEventListener('DOMContentLoaded', (event) => {
             document.getElementById('main-link').addEventListener('click', function() {
@@ -118,8 +116,9 @@
             alert("Please confirm your subscription in the Telegram channel.");
             // Здесь должна быть логика для проверки подписки пользователя
             setTimeout(function() {
-                alert("Subscription confirmed! You have earned 10 coins.");
+                alert("Subscription confirmed! You have earned 10 coins and 1 ticket.");
                 updateBalance(10);
+                addTicket();
             }, 5000);
         }
 
@@ -127,6 +126,16 @@
             const balanceElement = document.getElementById('balance');
             let currentBalance = parseInt(balanceElement.innerText);
             balanceElement.innerText = currentBalance + amount;
+        }
+
+        function updateTicketsDisplay(tickets) {
+            const ticketsElement = document.getElementById('tickets');
+            ticketsElement.innerText = tickets;
+        }
+
+        function addTicket() {
+            userTickets++;
+            updateTicketsDisplay(userTickets);
         }
 
         function generateReferralLink() {
@@ -151,50 +160,56 @@
 
         // Lucky Game Logic
         function startLuckyGame() {
-            const ticketValues = [20, 20, 50, 50, 50, 50, 100, 100, 100, 300, 500, 1000];
-            const shuffledValues = ticketValues.sort(() => Math.random() - 0.5);
-            const ticketsContainer = document.getElementById('tickets-container');
-            const balanceElement = document.getElementById('balance');
-            let remainingTickets = shuffledValues.length;
+            if (userTickets >= 1) {
+                const ticketValues = [20, 20, 50, 50, 50, 50, 100, 100, 100, 300, 500, 1000];
+                const shuffledValues = ticketValues.sort(() => Math.random() - 0.5);
+                const ticketsContainer = document.getElementById('tickets-container');
+                const balanceElement = document.getElementById('balance');
+                let ticketSelected = false;
 
-            // Очистка контейнера
-            ticketsContainer.innerHTML = '';
+                // Очистка контейнера
+                ticketsContainer.innerHTML = '';
 
-            // Создание билетиков
-            shuffledValues.forEach(value => {
-                const ticket = document.createElement('div');
-                ticket.classList.add('ticket');
-                ticket.innerHTML = '🎫';
-                ticket.onclick = function() {
-                    if (!ticket.classList.contains('revealed') && !ticket.classList.contains('disabled')) {
-                        ticket.classList.add('revealed');
-                        ticket.innerText = value;
-                        // Обновить баланс
-                        updateBalance(value);
-                        remainingTickets--;
+                // Создание билетиков
+                shuffledValues.forEach(value => {
+                    const ticket = document.createElement('div');
+                    ticket.classList.add('ticket');
+                    ticket.innerHTML = '🎫';
+                    ticket.onclick = function() {
+                        if (!ticket.classList.contains('revealed') && !ticket.classList.contains('disabled') && !ticketSelected) {
+                            ticket.classList.add('revealed');
+                            ticket.innerText = value;
+                            // Обновить баланс
+                            updateBalance(value);
+                            ticketSelected = true;
 
-                        // Если все билетики выбраны, блокируем остальные
-                        if (remainingTickets === 0) {
+                            // Блокировка остальных билетов
                             const allTickets = document.querySelectorAll('.ticket');
                             allTickets.forEach(t => {
                                 if (!t.classList.contains('revealed')) {
                                     t.classList.add('disabled');
                                 }
                             });
-                        }
-                    }
-                };
-                ticketsContainer.appendChild(ticket);
-            });
 
-            // Добавляем кнопку для выхода
-            const exitButton = document.createElement('button');
-            exitButton.textContent = 'Exit';
-            exitButton.classList.add('btn', 'btn-primary', 'mt-3');
-            exitButton.onclick = function() {
-                showPage('main-page');
-            };
-            ticketsContainer.appendChild(exitButton);
+                            // Уменьшаем количество билетов пользователя на 1
+                            userTickets--;
+                            updateTicketsDisplay(userTickets);
+                        }
+                    };
+                    ticketsContainer.appendChild(ticket);
+                });
+
+                // Добавляем кнопку для выхода
+                const exitButton = document.createElement('button');
+                exitButton.textContent = 'Exit';
+                exitButton.classList.add('btn', 'btn-primary', 'mt-3');
+                exitButton.onclick = function() {
+                    showPage('main-page');
+                };
+                ticketsContainer.appendChild(exitButton);
+            } else {
+                alert("You don't have enough tickets to play. Earn more tickets by subscribing or completing tasks!");
+            }
         }
     </script>
 </body>
