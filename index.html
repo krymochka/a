@@ -205,43 +205,45 @@
         }
 
         function updateBalance(amount) {
-        const balanceElement = document.getElementById('balance');
-        let currentBalance = parseInt(balanceElement.innerText);
-        balanceElement.innerText = currentBalance + amount;
-    }
+            const balanceElement = document.getElementById('balance');
+            let currentBalance = parseInt(balanceElement.innerText);
+            balanceElement.innerText = currentBalance + amount;
+            localStorage.setItem('balance', balanceElement.innerText); // Сохранить баланс в localStorage
+        }
 
-    function updateTicketsDisplay(tickets) {
-        const ticketsElement = document.getElementById('tickets');
-        ticketsElement.innerText = tickets;
-    }
+        function updateTicketsDisplay(tickets) {
+            const ticketsElement = document.getElementById('tickets');
+            ticketsElement.innerText = tickets;
+            localStorage.setItem('tickets', tickets); // Сохранить количество билетов в localStorage
+        }
 
-    function addTicket() {
-        userTickets++;
-        updateTicketsDisplay(userTickets);
-    }
+        function addTicket() {
+            userTickets++;
+            updateTicketsDisplay(userTickets);
+        }
 
-    function generateReferralLink() {
-        const referralLink = `https://t.me/FixiCoin_Bot/app?startapp=ref_${userId}`;
-        document.getElementById('referral-link-display').value = referralLink;
-        // Логика для отображения рефералов
-    }
+        function generateReferralLink() {
+            const referralLink = `https://t.me/FixiCoin_Bot/app?startapp=ref_${userId}`;
+            document.getElementById('referral-link-display').value = referralLink;
+            // Логика для отображения рефералов
+        }
 
-    function copyReferralLink() {
-        const referralLink = document.getElementById('referral-link-display');
-        referralLink.select();
-        referralLink.setSelectionRange(0, 99999); // Для мобильных устройств
-        document.execCommand('copy');
-        alert("Referral link copied to clipboard!");
-    }
+        function copyReferralLink() {
+            const referralLink = document.getElementById('referral-link-display');
+            referralLink.select();
+            referralLink.setSelectionRange(0, 99999); // Для мобильных устройств
+            document.execCommand('copy');
+            alert("Referral link copied to clipboard!");
+        }
 
-    function sendReferralLink() {
-        const referralLink = document.getElementById('referral-link-display').value;
-        const telegramUrl = `https://t.me/share/url?url=${encodeURIComponent(referralLink)}`;
-        window.open(telegramUrl, '_blank'); // Открыть ссылку в новой вкладке
-    }
+        function sendReferralLink() {
+            const referralLink = document.getElementById('referral-link-display').value;
+            const telegramUrl = `https://t.me/share/url?url=${encodeURIComponent(referralLink)}`;
+            window.open(telegramUrl, '_blank'); // Открыть ссылку в новой вкладке
+        }
 
-    // Логика для мини-игры "Lucky Game"
-    function startLuckyGame() {
+        // Логика для мини-игры "Lucky Game"
+        function startLuckyGame() {
             if (userTickets >= 1) {
                 const ticketValues = [20, 20, 50, 50, 50, 50, 100, 100, 100, 300, 500, 1000];
                 const shuffledValues = ticketValues.sort(() => Math.random() - 0.5);
@@ -274,17 +276,11 @@
                             userTickets--;
                             updateTicketsDisplay(userTickets);
 
-                            // Добавляем кнопку Confirm
-                            const confirmButton = document.createElement('button');
-                            confirmButton.textContent = 'Confirm';
-                            confirmButton.classList.add('btn', 'btn-primary', 'mt-3');
-                            confirmButton.onclick = function() {
-                                updateBalance(value);
-                                showPage('main-page');
-                                ticketSelected = false;
-                                ticketsContainer.innerHTML = '';
-                            };
-                            ticketsContainer.appendChild(confirmButton);
+                            // Обновление баланса и перенаправление на главную страницу
+                            updateBalance(value);
+                            setTimeout(function() {
+                                location.reload(); // Перезагрузка страницы для отображения обновленного баланса и количества билетов
+                            }, 1000);
                         }
                     };
                     ticketsContainer.appendChild(ticket);
@@ -293,6 +289,19 @@
                 alert('You need more tickets to play the game!');
             }
         }
-</script>
+
+        // Загрузка данных из localStorage при загрузке страницы
+        document.addEventListener('DOMContentLoaded', (event) => {
+            const savedBalance = localStorage.getItem('balance');
+            const savedTickets = localStorage.getItem('tickets');
+            if (savedBalance) {
+                document.getElementById('balance').innerText = savedBalance;
+            }
+            if (savedTickets) {
+                userTickets = parseInt(savedTickets);
+                updateTicketsDisplay(userTickets);
+            }
+        });
+    </script>
 </body>
 </html>
