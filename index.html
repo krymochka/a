@@ -11,8 +11,10 @@
     <style>
         body {
             font-family: 'Orbitron', sans-serif;
-            background-color: #f8f9fa;
-            color: #343a40;
+            background-color: #343a40; /* Dark background */
+            color: #fff; /* White text */
+            margin: 0;
+            padding: 0;
         }
 
         h1 {
@@ -26,21 +28,12 @@
             padding: 40px;
             margin-top: 20px;
             text-align: center;
-            background-color: rgba(0, 0, 0, 0.2);
+            background-color: rgba(255, 255, 255, 0.1); /* Transparent white background */
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             position: relative;
-        }
-
-        .info-box {
-            text-align: center;
-        }
-
-        .info-box p {
-            font-size: 1.2em;
-            margin: 0.5em 0;
         }
 
         .balance-icon {
@@ -49,32 +42,56 @@
             color: #6c757d;
         }
 
-        .task-info {
+        .ticket-balance {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 1em;
+            background-color: #343a40; /* Dark background */
+            color: #fff; /* White text */
+            padding: 5px 10px;
+            border-radius: 5px;
+        }
+
+        .profile-info {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-top: 20px;
-        }
-
-        .task-info p {
-            margin: 0;
-            font-size: 1.2em;
-        }
-
-        .navbar {
             padding: 10px;
+            background-color: #000;
+            color: #fff;
+            margin-bottom: 20px;
+            border-radius: 5px;
         }
 
-        .btn-confirm {
-            display: none;
+        .profile-info img {
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
         }
 
-        .page {
-            display: none;
+        .profile-info .username {
+            flex-grow: 1;
+            margin-left: 10px;
         }
 
-        .page.active {
-            display: block;
+        .profile-info .balance {
+            font-size: 1.2em;
+            margin-left: 10px;
+        }
+
+        .centered-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            height: calc(100vh - 70px); /* Subtracting navbar height */
+        }
+
+        .game-container {
+            width: 100%;
+            max-width: 800px;
+            text-align: center;
         }
 
         .ticket {
@@ -108,33 +125,6 @@
             transform: translate(-50%, -50%) scale(1.5);
         }
 
-        .profile-info {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 10px;
-            background-color: #000;
-            color: #fff;
-            margin-bottom: 20px;
-            border-radius: 5px;
-        }
-
-        .profile-info img {
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
-        }
-
-        .profile-info .username {
-            flex-grow: 1;
-            margin-left: 10px;
-        }
-
-        .profile-info .balance {
-            font-size: 1.2em;
-            margin-left: 10px;
-        }
-
         .play-button {
             border-radius: 50%;
             width: 50px;
@@ -147,32 +137,32 @@
             color: #fff;
             border: none;
             cursor: pointer;
+            margin-top: 20px;
         }
 
         .play-button:hover {
             background-color: #0056b3;
         }
 
-        .centered-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: calc(100vh - 70px); /* Subtracting navbar height */
-        }
-
-        .game-container {
+        .navbar {
+            padding: 10px;
+            background-color: #6c757d; /* Darker navbar background */
+            position: fixed;
+            bottom: 0;
             width: 100%;
-            max-width: 800px;
+            z-index: 1000;
         }
 
-        .ticket-balance {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            font-size: 1em;
-            background-color: #fff;
-            padding: 5px 10px;
-            border-radius: 5px;
+        .navbar .nav-button {
+            color: #fff;
+            background: none;
+            border: none;
+            font-size: 1.5em;
+            cursor: pointer;
+        }
+
+        .navbar .nav-button:hover {
+            color: gold;
         }
     </style>
 </head>
@@ -183,17 +173,21 @@
             <div class="profile-info">
                 <img id="user-avatar" src="" alt="User Avatar">
                 <span class="username" id="user-name">yarik.</span>
-                <span class="balance"><span id="balance">450</span>F</span>
+                <button class="play-button" onclick="showPage('referral-page')">
+                    Get more
+                </button>
+                <span class="balance"><span id="balance">450</span> F</span>
             </div>
             <div class="centered-container">
                 <div class="game-container">
+                    <h1>Lucky Game</h1>
+                    <div class="ticket-balance">🎫 <span id="tickets">3</span></div>
                     <div class="game-box">
-                        <h1>Lucky Game</h1>
-                        <div class="ticket-balance">🎫 <span id="tickets">3</span></div>
                         <button class="play-button" onclick="showPage('lucky-game-page')">
                             <i class="fas fa-play"></i>
                         </button>
                     </div>
+                    <h1 style="text-align: center; margin-top: 30px; font-size: 2.5em;">FIXI Coin</h1>
                 </div>
             </div>
         </div>
@@ -227,10 +221,10 @@
             </div>
         </div>
 
-        <div class="navbar fixed-bottom bg-dark d-flex justify-content-around">
-            <button class="nav-button" id="main-link"><i class="fas fa-home"></i></button>
-            <button class="nav-button" id="tasks-link"><i class="fas fa-tasks"></i></button>
-            <button class="nav-button" id="referral-link"><i class="fas fa-user-friends"></i></button>
+        <div class="navbar">
+            <button class="nav-button" id="main-link" onclick="showPage('main-page')"><i class="fas fa-home"></i></button>
+            <button class="nav-button" id="tasks-link" onclick="showPage('tasks-page')"><i class="fas fa-tasks"></i></button>
+            <button class="nav-button" id="referral-link" onclick="showPage('referral-page')"><i class="fas fa-user-friends"></i></button>
         </div>
     </div>
 
