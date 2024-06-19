@@ -6,29 +6,26 @@
     <title>Game App</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@700&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@900&display=swap">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600;700&display=swap">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <style>
         body {
             font-family: 'Open Sans', sans-serif;
-            background-color: #f8f9fa;
-            color: #343a40;
         }
 
         h1 {
             font-family: 'Roboto', sans-serif;
-            font-weight: 700;
-            color: #007bff;
+            font-weight: 900;
         }
 
         .game-box {
-            border: 2px solid #007bff;
+            border: 2px solid #dc3545; /* Красная обводка */
             border-radius: 10px;
             padding: 20px;
             margin-top: 20px;
             text-align: center;
-            background-color: rgba(0, 0, 0, 0.2); /* Прозрачный тёмный фон */
+            background-color: rgba(255, 255, 255, 0.8);
         }
 
         .info-box {
@@ -44,45 +41,40 @@
             font-family: 'Roboto', sans-serif;
             font-weight: 900;
             font-size: 1.5em;
-            color: #007bff;
+            color: #495057; /* Цвет графита */
         }
 
         .task-info {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-top: 20px;
         }
 
         .task-info p {
             margin: 0;
-            font-size: 1.2em;
         }
 
         .navbar {
             padding: 10px;
         }
 
-        .btn-confirm {
-            display: none; /* Начинаем с скрытой кнопки Confirm */
-        }
-
-        .page {
-            display: none;
-        }
-
-        .page.active {
-            display: block;
-        }
-
         .ticket {
-            cursor: pointer;
-            font-size: 1.5em;
-            margin: 5px;
+            border: 2px solid #dc3545; /* Красная обводка */
             padding: 10px;
-            border: 2px solid #007bff;
-            border-radius: 5px;
-            background-color: rgba(0, 0, 0, 0.2); /* Прозрачный тёмный фон для билетов */
+            margin: 5px;
+            font-size: 1.5em;
+            cursor: pointer;
+        }
+
+        .ticket.revealed {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        .btn-confirm {
+            background-color: #dc3545;
+            border-color: #dc3545;
+            color: white;
         }
     </style>
 </head>
@@ -108,7 +100,7 @@
         <div id="lucky-game-page" class="page">
             <h1>Lucky Game</h1>
             <div id="tickets-container" class="d-flex flex-wrap justify-content-center">
-                <!-- Билетики будут добавлены здесь с помощью JavaScript -->
+                <!-- Tickets will be added here via JavaScript -->
             </div>
             <button class="btn btn-primary mt-3" onclick="startLuckyGame()">Start</button>
         </div>
@@ -119,7 +111,7 @@
             <p>Complete the tasks below to earn more tickets and coins.</p>
             <div class="task-info">
                 <p>Subscribe to <a href="https://t.me/fixicoin" target="_blank">Fixicoin Telegram</a></p>
-                <p>🎫 1 &nbsp; <span class="balance-icon">F</span> 300 coins</p>
+                <p>🎫 1 &nbsp; F 300 coins</p>
             </div>
             <button id="subscribe-button" class="btn btn-primary mt-3" onclick="confirmSubscription()">Confirm Subscription</button>
         </div>
@@ -240,51 +232,50 @@
             window.open(telegramUrl, '_blank'); // Открыть ссылку в новой вкладке
         }
 
-        // Логика для мини-игры "Lucky Game"
-        function startLuckyGame() {
-            if (userTickets >= 1) {
-                const ticketValues = [20, 20, 50, 50, 50, 50, 100, 100, 100, 300, 500, 1000];
-                const shuffledValues = ticketValues.sort(() => Math.random() - 0.5);
-                const ticketsContainer = document.getElementById('tickets-container');
-                let ticketSelected = false;
+    // Логика для мини-игры "Lucky Game"
+function startLuckyGame() {
+    if (userTickets >= 1) {
+        const ticketValues = [20, 20, 50, 50, 50, 50, 100, 100, 100, 300, 500, 1000];
+        const shuffledValues = ticketValues.sort(() => Math.random() - 0.5);
+        
+        // Уменьшаем количество билетов и обновляем на странице
+        userTickets--;
+        updateTicketsDisplay(userTickets);
 
-                // Очистка контейнера
-                ticketsContainer.innerHTML = '';
+        // Отображаем билеты в интерфейсе
+        const ticketsContainer = document.getElementById('tickets-container');
+        ticketsContainer.innerHTML = '';
+        shuffledValues.forEach(value => {
+            const ticketElement = document.createElement('div');
+            ticketElement.classList.add('ticket');
+            ticketElement.textContent = value;
+            ticketElement.addEventListener('click', () => revealTicket(value));
+            ticketsContainer.appendChild(ticketElement);
+        });
+    } else {
+        alert("You don't have enough tickets to play. Earn more tickets by completing tasks!");
+    }
+}
 
-                // Создание билетов
-                shuffledValues.forEach(value => {
-                    const ticket = document.createElement('div');
-                    ticket.classList.add('ticket');
-                    ticket.innerHTML = '🎫';
-                    ticket.onclick = function() {
-                        if (!ticket.classList.contains('revealed') && !ticket.classList.contains('disabled') && !ticketSelected) {
-                            ticket.classList.add('revealed');
-                            ticket.innerText = value;
-                            ticketSelected = true;
-
-                            // Обновить баланс
-                            updateBalance(value);
-
-                            // Добавить кнопку Confirm после выбора билета
-                            const confirmButton = document.createElement('button');
-                            confirmButton.textContent = 'Confirm';
-                            confirmButton.classList.add('btn', 'btn-primary', 'mt-3', 'btn-confirm');
-                            confirmButton.onclick = function() {
-                                showPage('main-page');
-                                userTickets--;
-                                updateTicketsDisplay(userTickets);
-                                ticketSelected = false;
-                                ticketsContainer.innerHTML = '';
-                            };
-                            ticketsContainer.appendChild(confirmButton);
-                        }
-                    };
-                    ticketsContainer.appendChild(ticket);
-                });
-            } else {
-                alert('You need more tickets to play the game!');
-            }
+function revealTicket(value) {
+    const ticketsContainer = document.getElementById('tickets-container');
+    const tickets = ticketsContainer.getElementsByClassName('ticket');
+    
+    // Помечаем выбранный билет как открытый
+    for (let i = 0; i < tickets.length; i++) {
+        if (parseInt(tickets[i].textContent) === value) {
+            tickets[i].classList.add('revealed');
+            tickets[i].removeEventListener('click', revealTicket);
+            break;
         }
-    </script>
-</body>
-</html>
+    }
+
+    // Добавляем выигрыш к балансу
+    updateBalance(value);
+
+    // Проверяем, если билеты закончились, отключаем кнопку "Start"
+    if (userTickets === 0) {
+        const startButton = document.querySelector('#lucky-game-page .btn-primary');
+        startButton.disabled = true;
+    }
+}
