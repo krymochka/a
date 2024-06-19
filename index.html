@@ -4,119 +4,199 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Game App</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@700&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600;700&display=swap">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <style>
         body {
-            font-family: 'Orbitron', sans-serif;
-            background-color: #1a1a1a;
-            color: #fff;
+            font-family: 'Open Sans', sans-serif;
+            background-color: #f8f9fa;
+            color: #343a40;
         }
 
-        .container {
-            max-width: 960px;
-            margin: 20px auto;
-            padding: 20px;
-            background-color: #333;
+        h1 {
+            font-family: 'Roboto', sans-serif;
+            font-weight: 700;
+            color: #6c757d;
+        }
+
+        .game-box {
+            border: 2px solid #6c757d;
             border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            text-align: center;
+            background-color: rgba(0, 0, 0, 0.2);
         }
 
-        .profile-info {
+        .info-box {
+            text-align: center;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 10px;
-            background-color: #000;
-            color: #fff;
-            border-radius: 5px;
             margin-bottom: 20px;
         }
 
-        .profile-info img {
+        .info-box img {
             border-radius: 50%;
             width: 50px;
             height: 50px;
         }
 
-        .profile-info .username {
-            margin-left: 10px;
+        .info-box .balance {
+            display: flex;
+            align-items: center;
+        }
+
+        .info-box .balance span {
+            margin-left: 5px;
+            font-family: 'Roboto', sans-serif;
+            font-weight: 900;
+            font-size: 1.5em;
+            color: #6c757d;
+        }
+
+        .task-info {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+
+        .task-info p {
+            margin: 0;
             font-size: 1.2em;
         }
 
-        .balance-ticket {
-            text-align: center;
-            background-color: #666;
-            color: #fff;
+        .navbar {
             padding: 10px;
-            margin-bottom: 20px;
-            border-radius: 5px;
         }
 
-        .balance-ticket p {
-            margin: 5px 0;
+        .btn-confirm {
+            display: none;
         }
 
-        .game-container {
-            text-align: center;
-            background-color: #333;
-            padding: 20px;
-            margin-bottom: 20px;
-            border-radius: 10px;
+        .page {
+            display: none;
         }
 
-        .game-container h2 {
-            font-size: 2em;
-            margin-bottom: 20px;
-            color: #fff;
-        }
-
-        .get-more-btn {
+        .page.active {
             display: block;
-            width: 100%;
-            margin-top: 20px;
-            text-align: center;
         }
 
-        .get-more-btn a {
-            display: inline-block;
-            padding: 10px 20px;
-            background-color: #007bff;
+        .ticket {
+            cursor: pointer;
+            font-size: 1.5em;
+            margin: 5px;
+            padding: 10px;
+            border: 2px solid red;
+            border-radius: 5px;
+            background-color: rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s;
+        }
+
+        .ticket.revealed {
+            transform: scale(1.2);
+        }
+
+        .prize {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 2em;
+            color: gold;
+            opacity: 0;
+            transition: opacity 0.5s, transform 0.5s;
+        }
+
+        .prize.show {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1.5);
+        }
+
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            background-color: #000;
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0;
+        }
+
+        .bottom-nav a {
             color: #fff;
             text-decoration: none;
-            border-radius: 5px;
-            transition: background-color 0.3s;
+            font-size: 1.2em;
         }
 
-        .get-more-btn a:hover {
-            background-color: #0056b3;
+        .bottom-nav a i {
+            display: block;
+            font-size: 1.5em;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="profile-info">
-            <img id="user-avatar" src="" alt="User Avatar">
-            <span class="username" id="user-name">yarik.</span>
-            <p class="balance-ticket">Balance: <span id="balance">450F</span></p>
+    <div id="particles-js"></div>
+    <div class="container mt-5">
+        <div id="main-page" class="page active">
+            <h1>Main</h1>
+            <div class="info-box">
+                <img id="user-avatar" src="" alt="User Avatar">
+                <p id="user-name">yarik</p>
+                <div class="balance">
+                    <span class="balance-icon">450</span> <span>F</span>
+                </div>
+            </div>
+            <div class="game-box">
+                <p>Lucky game</p>
+                <button class="btn btn-primary btn-sm" onclick="showPage('lucky-game-page')">Play</button>
+            </div>
         </div>
 
-        <div class="game-container">
-            <h2>Lucky Game</h2>
+        <div id="lucky-game-page" class="page">
+            <h1>Lucky Game</h1>
             <div id="tickets-container" class="d-flex flex-wrap justify-content-center">
-                <!-- Mini-game content here -->
-            </div>
-            <div class="balance-ticket">
-                <p><i class="fas fa-ticket-alt"></i> <span id="tickets">3</span> Tickets</p>
+                <div class="ticket">🎫 <span id="balance">450</span></div>
             </div>
             <button class="btn btn-primary mt-3" onclick="startLuckyGame()">Start</button>
         </div>
 
-        <div class="get-more-btn">
-            <a href="referral-page.html">Get more</a>
+        <div id="tasks-page" class="page">
+            <h1>Tasks</h1>
+            <p>Complete the tasks below to earn more tickets and coins.</p>
+            <div class="task-info">
+                <p>Subscribe to <a href="https://t.me/fixicoin" target="_blank">Fixicoin Telegram</a></p>
+                <p>🎫 1 &nbsp; <span class="balance-icon">F</span> 300 coins</p>
+            </div>
+            <button id="subscribe-button" class="btn btn-primary mt-3" onclick="confirmSubscription()">Confirm Subscription</button>
+        </div>
+
+        <div id="referral-page" class="page">
+            <h1>Referral</h1>
+            <p>Invite friends and earn tickets and coins!</p>
+            <div class="input-group">
+                <input type="text" id="referral-link-display" class="form-control" readonly>
+                <div class="input-group-append">
+                    <button class="btn btn-primary" onclick="copyReferralLink()">Copy</button>
+                    <button class="btn btn-primary" onclick="sendReferralLink()">Send</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="bottom-nav">
+            <a href="#" onclick="showPage('main-page')"><i class="fas fa-home"></i> Home</a>
+            <a href="#" onclick="showPage('tasks-page')"><i class="fas fa-tasks"></i> Task</a>
+            <a href="#" onclick="showPage('referral-page')"><i class="fas fa-user-friends"></i> Referral</a>
         </div>
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/particles.js/2.0.0/particles.min.js"></script>
+    <div id="prize-display" class="prize"></div>
+
+    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
     <script src="scripts.js"></script>
     <script>
         particlesJS.load('particles-js', 'particles.json', function() {
@@ -145,63 +225,82 @@
             }
         });
 
-        function updateTicketsDisplay(tickets) {
-            const ticketsElement = document.getElementById('tickets');
-            ticketsElement.innerText = tickets;
-            localStorage.setItem('tickets', tickets);
+        function showPage(pageId) {
+            const pages = document.querySelectorAll('.page');
+            pages.forEach(page => {
+                if (page.id === pageId) {
+                    page.classList.add('active');
+                } else {
+                    page.classList.remove('active');
+                }
+            });
+        }
+
+        function confirmSubscription() {
+            document.getElementById('subscribe-button').disabled = true;
+            document.getElementById('subscribe-button').innerText = 'Confirmed!';
+            setTimeout(() => {
+                alert("Subscription confirmed! You earned 300 coins and 1 ticket.");
+                userTickets++;
+                updateBalance(300);
+                updateTicketsDisplay(userTickets);
+            }, 3000);
+        }
+
+        function generateReferralLink() {
+            const referralLink = `https://t.me/FixiCoin_Bot/referral?user_id=${userId}`;
+            document.getElementById('referral-link-display').value = referralLink;
+        }
+
+        function copyReferralLink() {
+            const referralLink = document.getElementById('referral-link-display');
+            referralLink.select();
+            referralLink.setSelectionRange(0, 99999);
+            document.execCommand('copy');
+            alert('Referral link copied to clipboard!');
+        }
+
+        function sendReferralLink() {
+            const referralLink = document.getElementById('referral-link-display').value;
+            window.location.href = `https://t.me/share/url?url=${encodeURIComponent(referralLink)}&text=Join%20me%20on%20this%20awesome%20app!`;
         }
 
         function startLuckyGame() {
-            if (userTickets >= 1) {
+            if (userTickets > 0) {
                 userTickets--;
                 updateTicketsDisplay(userTickets);
-
-                const ticketValues = [20, 20, 50, 50, 50, 50, 100, 100, 100, 300, 500, 1000];
-                const shuffledValues = ticketValues.sort(() => Math.random() - 0.5);
-                const ticketsContainer = document.getElementById('tickets-container');
-
-                ticketsContainer.innerHTML = '';
-
-                shuffledValues.forEach(value => {
-                    const ticket = document.createElement('div');
-                    ticket.classList.add('ticket');
-                    ticket.innerHTML = '🎫';
-                    ticket.onclick = function() {
-                        if (!ticket.classList.contains('revealed') && !ticket.classList.contains('disabled')) {
-                            ticket.classList.add('revealed');
-                            showPrize(value);
-
-                            const allTickets = document.querySelectorAll('.ticket');
-                            allTickets.forEach(t => {
-                                if (!t.classList.contains('revealed')) {
-                                    t.classList.add('disabled');
-                                }
-                            });
-                        }
-                    };
-                    ticketsContainer.appendChild(ticket);
-                });
+                const prize = Math.random() < 0.1 ? 100 : 0;
+                const prizeDisplay = document.getElementById('prize-display');
+                prizeDisplay.textContent = prize ? `You won ${prize} coins!` : 'No prize, try again!';
+                prizeDisplay.classList.add('show');
+                setTimeout(() => {
+                    prizeDisplay.classList.remove('show');
+                    if (prize) {
+                        updateBalance(prize);
+                    }
+                }, 3000);
             } else {
-                alert('You need more tickets to play the game!');
+                alert('No more tickets available.');
             }
         }
 
-        function showPrize(prize) {
-            const prizeDisplay = document.getElementById('prize-display');
-            prizeDisplay.innerText = prize;
-            prizeDisplay.classList.add('show');
-
-            setTimeout(() => {
-                prizeDisplay.classList.remove('show');
-                updateBalance(prize);
-            }, 2000);
+        function updateTicketsDisplay(tickets) {
+            document.getElementById('tickets-container').innerHTML = '';
+            for (let i = 0; i < tickets; i++) {
+                const ticketElement = document.createElement('div');
+                ticketElement.classList.add('ticket');
+                ticketElement.innerHTML = '🎫';
+                document.getElementById('tickets-container').appendChild(ticketElement);
+            }
+            localStorage.setItem('tickets', tickets);
         }
 
         function updateBalance(amount) {
             const balanceElement = document.getElementById('balance');
-            let currentBalance = parseInt(balanceElement.innerText);
-            balanceElement.innerText = currentBalance + amount;
-            localStorage.setItem('balance', balanceElement.innerText);
+            let balance = parseInt(balanceElement.innerText) || 0;
+            balance += amount;
+            balanceElement.innerText = balance;
+            localStorage.setItem('balance', balance);
         }
     </script>
 </body>
