@@ -173,10 +173,10 @@
             <div class="profile-info">
                 <img id="user-avatar" src="" alt="User Avatar">
                 <span class="username" id="user-name">yarik.</span>
+                <span class="balance"><span id="balance">450</span> F</span>
                 <button class="play-button" onclick="showPage('referral-page')">
                     Get more
                 </button>
-                <span class="balance"><span id="balance">450</span> F</span>
             </div>
             <div class="centered-container">
                 <div class="game-container">
@@ -187,8 +187,8 @@
                             <i class="fas fa-play"></i>
                         </button>
                     </div>
-                    <h1 style="text-align: center; margin-top: 30px; font-size: 2.5em;">FIXI Coin</h1>
                 </div>
+                <h1 style="text-align: center; margin-top: 30px; font-size: 3em;">FIXI Coin</h1>
             </div>
         </div>
 
@@ -258,10 +258,6 @@
                 document.getElementById('balance').innerText = savedBalance;
             }
         });
-
-        document.getElementById('main-link').addEventListener('click', () => showPage('main-page'));
-        document.getElementById('tasks-link').addEventListener('click', () => showPage('tasks-page'));
-        document.getElementById('referral-link').addEventListener('click', () => showPage('referral-page'));
 
         function showPage(pageId) {
             const pages = document.querySelectorAll('.page');
