@@ -7,21 +7,19 @@
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@700&display=swap">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@600&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600;700&display=swap">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <style>
         body {
             font-family: 'Open Sans', sans-serif;
+            background-color: #f8f9fa;
+            color: #343a40;
         }
 
         h1 {
             font-family: 'Roboto', sans-serif;
             font-weight: 700;
-            margin-bottom: 20px;
-        }
-
-        .game-box, .info-box, .task-info {
-            font-weight: 600;
+            color: #007bff;
         }
 
         .game-box {
@@ -30,22 +28,21 @@
             padding: 20px;
             margin-top: 20px;
             text-align: center;
-            background-color: rgba(255, 255, 255, 0.8);
+            background-color: rgba(0, 0, 0, 0.2); /* Прозрачный тёмный фон */
         }
 
-        .info-box, .task-info {
+        .info-box {
             text-align: center;
-            margin-bottom: 20px;
         }
 
-        .info-box p, .task-info p {
+        .info-box p {
             font-size: 1.2em;
             margin: 0.5em 0;
         }
 
         .balance-icon {
             font-family: 'Roboto', sans-serif;
-            font-weight: 700;
+            font-weight: 900;
             font-size: 1.5em;
             color: #007bff;
         }
@@ -54,26 +51,38 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
+            margin-top: 20px;
+        }
+
+        .task-info p {
+            margin: 0;
+            font-size: 1.2em;
         }
 
         .navbar {
             padding: 10px;
         }
 
-        .page {
-            background-color: rgba(255, 255, 255, 0.95);
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            margin-bottom: 20px;
+        .btn-confirm {
+            display: none; /* Начинаем с скрытой кнопки Confirm */
         }
 
-        #lucky-game-page {
-            background-color: rgba(255, 255, 255, 0.7);
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            margin-bottom: 20px;
+        .page {
+            display: none;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        .ticket {
+            cursor: pointer;
+            font-size: 1.5em;
+            margin: 5px;
+            padding: 10px;
+            border: 2px solid #007bff;
+            border-radius: 5px;
+            background-color: rgba(0, 0, 0, 0.2); /* Прозрачный тёмный фон для билетов */
         }
     </style>
 </head>
@@ -110,7 +119,7 @@
             <p>Complete the tasks below to earn more tickets and coins.</p>
             <div class="task-info">
                 <p>Subscribe to <a href="https://t.me/fixicoin" target="_blank">Fixicoin Telegram</a></p>
-                <p>🎫 1 &nbsp; F 300 coins</p>
+                <p>🎫 1 &nbsp; <span class="balance-icon">F</span> 300 coins</p>
             </div>
             <button id="subscribe-button" class="btn btn-primary mt-3" onclick="confirmSubscription()">Confirm Subscription</button>
         </div>
@@ -231,77 +240,50 @@
             window.open(telegramUrl, '_blank'); // Открыть ссылку в новой вкладке
         }
 
-        // Lucky Game Logic
+        // Логика для мини-игры "Lucky Game"
         function startLuckyGame() {
             if (userTickets >= 1) {
                 const ticketValues = [20, 20, 50, 50, 50, 50, 100, 100, 100, 300, 500, 1000];
                 const shuffledValues = ticketValues.sort(() => Math.random() - 0.5);
                 const ticketsContainer = document.getElementById('tickets-container');
-                let remainingTickets = shuffledValues.length;
+                let ticketSelected = false;
 
                 // Очистка контейнера
                 ticketsContainer.innerHTML = '';
 
-                // Создание билетиков
+                // Создание билетов
                 shuffledValues.forEach(value => {
                     const ticket = document.createElement('div');
                     ticket.classList.add('ticket');
                     ticket.innerHTML = '🎫';
                     ticket.onclick = function() {
-                        if (!ticket.classList.contains('revealed') && !ticket.classList.contains('disabled')) {
+                        if (!ticket.classList.contains('revealed') && !ticket.classList.contains('disabled') && !ticketSelected) {
                             ticket.classList.add('revealed');
                             ticket.innerText = value;
+                            ticketSelected = true;
+
                             // Обновить баланс
                             updateBalance(value);
-                            remainingTickets--;
 
-                            // Если все билетики выбраны, блокируем остальные
-                            if (remainingTickets === 0) {
-                                const allTickets = document.querySelectorAll('.ticket');
-                                allTickets.forEach(t => {
-                                    if (!t.classList.contains('revealed')) {
-                                        t.classList.add('disabled');
-                                    }
-                                });
-
-                                // Показать кнопку Confirm и скрыть кнопку Exit
-                                const exitButton = document.querySelector('.btn-exit');
-                                exitButton.style.display = 'none';
-                                const confirmButton = document.querySelector('.btn-confirm');
-                                confirmButton.style.display = 'inline-block';
-                            }
+                            // Добавить кнопку Confirm после выбора билета
+                            const confirmButton = document.createElement('button');
+                            confirmButton.textContent = 'Confirm';
+                            confirmButton.classList.add('btn', 'btn-primary', 'mt-3', 'btn-confirm');
+                            confirmButton.onclick = function() {
+                                showPage('main-page');
+                                userTickets--;
+                                updateTicketsDisplay(userTickets);
+                                ticketSelected = false;
+                                ticketsContainer.innerHTML = '';
+                            };
+                            ticketsContainer.appendChild(confirmButton);
                         }
                     };
                     ticketsContainer.appendChild(ticket);
                 });
-
-                // Добавляем кнопку Confirm
-                const confirmButton = document.createElement('button');
-                confirmButton.textContent = 'Confirm';
-                confirmButton.classList.add('btn', 'btn-primary', 'btn-confirm', 'mt-3');
-                confirmButton.style.display = 'none'; // Начинаем с скрытой кнопки Confirm
-                confirmButton.onclick = function() {
-                    // Здесь логика для подтверждения выигрыша и возврата на главную страницу
-                    alert('Congratulations! You confirmed your win.');
-                    // Обновление страницы игры
-                    startLuckyGame();
-                    showPage('main-page');
-                };
-                ticketsContainer.appendChild(confirmButton);
             } else {
-                alert('You do not have enough tickets to play the game. Earn more tickets from tasks or referral.');
+                alert('You need more tickets to play the game!');
             }
-        }
-
-        // Функция для обновления баланса тикетов
-        function updateTicketsDisplay(tickets) {
-            const ticketsElement = document.getElementById('tickets');
-            ticketsElement.innerText = tickets;
-        }
-
-        // Функция для отображения страницы задач после подтверждения подписки
-        function showTasksPage() {
-            showPage('tasks-page');
         }
     </script>
 </body>
