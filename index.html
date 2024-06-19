@@ -33,7 +33,6 @@
                 <!-- Билетики будут добавлены здесь с помощью JavaScript -->
             </div>
             <button class="btn btn-primary mt-3" onclick="startLuckyGame()">Start</button>
-            <button class="btn btn-primary mt-3" onclick="showPage('main-page')">Exit</button>
         </div>
 
         <!-- Tasks Page -->
@@ -164,7 +163,6 @@
                 const ticketValues = [20, 20, 50, 50, 50, 50, 100, 100, 100, 300, 500, 1000];
                 const shuffledValues = ticketValues.sort(() => Math.random() - 0.5);
                 const ticketsContainer = document.getElementById('tickets-container');
-                const balanceElement = document.getElementById('balance');
                 let ticketSelected = false;
 
                 // Очистка контейнера
@@ -179,8 +177,6 @@
                         if (!ticket.classList.contains('revealed') && !ticket.classList.contains('disabled') && !ticketSelected) {
                             ticket.classList.add('revealed');
                             ticket.innerText = value;
-                            // Обновить баланс
-                            updateBalance(value);
                             ticketSelected = true;
 
                             // Блокировка остальных билетов
@@ -194,19 +190,20 @@
                             // Уменьшаем количество билетов пользователя на 1
                             userTickets--;
                             updateTicketsDisplay(userTickets);
+
+                            // Добавляем кнопку Confirm
+                            const confirmButton = document.createElement('button');
+                            confirmButton.textContent = 'Confirm';
+                            confirmButton.classList.add('btn', 'btn-primary', 'mt-3');
+                            confirmButton.onclick = function() {
+                                updateBalance(value);
+                                showPage('main-page');
+                            };
+                            ticketsContainer.appendChild(confirmButton);
                         }
                     };
                     ticketsContainer.appendChild(ticket);
                 });
-
-                // Добавляем кнопку для выхода
-                const exitButton = document.createElement('button');
-                exitButton.textContent = 'Exit';
-                exitButton.classList.add('btn', 'btn-primary', 'mt-3');
-                exitButton.onclick = function() {
-                    showPage('main-page');
-                };
-                ticketsContainer.appendChild(exitButton);
             } else {
                 alert("You don't have enough tickets to play. Earn more tickets by subscribing or completing tasks!");
             }
