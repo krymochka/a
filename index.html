@@ -43,14 +43,12 @@
         }
 
         .ticket-balance {
-            position: absolute;
-            top: 10px;
-            right: 10px;
             font-size: 1em;
             background-color: #343a40; /* Dark background */
             color: #fff; /* White text */
             padding: 5px 10px;
             border-radius: 5px;
+            margin-top: 20px; /* Add margin-top to create space below the game box */
         }
 
         .profile-info {
@@ -170,25 +168,22 @@
     <div id="particles-js"></div>
     <div class="container mt-5">
         <div id="main-page" class="page active">
-            <div class="profile-info">
-                <img id="user-avatar" src="" alt="User Avatar">
-                <span class="username" id="user-name">yarik.</span>
-                <span class="balance"><span id="balance">450</span> F</span>
-                <button class="play-button" onclick="showPage('referral-page')">
-                    Get more
-                </button>
-            </div>
             <div class="centered-container">
+                <h1 style="text-align: center; margin-top: 30px; font-size: 3em;">FIXI Coin</h1>
                 <div class="game-container">
-                    <h1>Lucky Game</h1>
-                    <div class="ticket-balance">🎫 <span id="tickets">3</span></div>
                     <div class="game-box">
+                        <h1>Lucky Game</h1>
                         <button class="play-button" onclick="showPage('lucky-game-page')">
                             <i class="fas fa-play"></i>
                         </button>
                     </div>
+                    <div class="ticket-balance">🎫 <span id="tickets">3</span> <button class="btn btn-primary" onclick="showPage('referral-page')">Get more</button></div>
                 </div>
-                <h1 style="text-align: center; margin-top: 30px; font-size: 3em;">FIXI Coin</h1>
+                <div class="profile-info">
+                    <img id="user-avatar" src="" alt="User Avatar">
+                    <span class="username" id="user-name">yarik.</span>
+                    <span class="balance"><span id="balance">450</span> F</span>
+                </div>
             </div>
         </div>
 
@@ -249,114 +244,65 @@
             document.getElementById('user-avatar').src = photoUrl;
         }
 
-        let userTickets = localStorage.getItem('tickets') ? parseInt(localStorage.getItem('tickets')) : 3;
-        updateTicketsDisplay(userTickets);
-
-        document.addEventListener('DOMContentLoaded', (event) => {
+        document.addEventListener('DOMContentLoaded', () => {
             const savedBalance = localStorage.getItem('balance');
             if (savedBalance) {
-                document.getElementById('balance').innerText = savedBalance;
+                document.getElementById('balance').textContent = savedBalance;
             }
         });
 
-        function showPage(pageId) {
-            const pages = document.querySelectorAll('.page');
-            pages.forEach(page => {
-                if (page.id === pageId) {
-                    page.classList.add('active');
-                } else {
-                    page.classList.remove('active');
-                }
-            });
-        }
-
-        function confirmSubscription() {
-            document.getElementById('subscribe-button').disabled = true;
-            document.getElementById('subscribe-button').innerText = 'Confirmed!';
-            setTimeout(() => {
-                alert("Subscription confirmed! You earned 300 coins and 1 ticket.");
-                userTickets++;
-                updateBalance(300);
-                updateTicketsDisplay(userTickets);
-            }, 3000);
-        }
-
-        function generateReferralLink() {
-            const referralLink = `https://t.me/FixiCoin_Bot/referral?user_id=${userId}`;
-            document.getElementById('referral-link-display').value = referralLink;
-        }
-
-        function copyReferralLink() {
-            const referralLink = document.getElementById('referral-link-display');
-            referralLink.select();
-            referralLink.setSelectionRange(0, 99999);
-            document.execCommand('copy');
-            alert("Referral link copied to clipboard!");
-        }
-
-        function sendReferralLink() {
-            const referralLink = document.getElementById('referral-link-display').value;
-            const telegramUrl = `https://t.me/share/url?url=${encodeURIComponent(referralLink)}`;
-            window.open(telegramUrl, '_blank');
+        function updateTicketsDisplay(tickets) {
+            document.getElementById('tickets').textContent = tickets;
         }
 
         function startLuckyGame() {
-            if (userTickets >= 1) {
-                userTickets--;
-                updateTicketsDisplay(userTickets);
+            const ticketsContainer = document.getElementById('tickets-container');
+            ticketsContainer.innerHTML = ''; // Clear previous tickets
 
-                const ticketValues = [20, 20, 50, 50, 50, 50, 100, 100, 100, 300, 500, 1000];
-                const shuffledValues = ticketValues.sort(() => Math.random() - 0.5);
-                const ticketsContainer = document.getElementById('tickets-container');
-
-                ticketsContainer.innerHTML = '';
-
-                shuffledValues.forEach(value => {
-                    const ticket = document.createElement('div');
-                    ticket.classList.add('ticket');
-                    ticket.innerHTML = '🎫';
-                    ticket.onclick = function() {
-                        if (!ticket.classList.contains('revealed') && !ticket.classList.contains('disabled')) {
-                            ticket.classList.add('revealed');
-                            showPrize(value);
-
-                            const allTickets = document.querySelectorAll('.ticket');
-                            allTickets.forEach(t => {
-                                if (!t.classList.contains('revealed')) {
-                                    t.classList.add('disabled');
-                                }
-                            });
-                        }
-                    };
-                    ticketsContainer.appendChild(ticket);
-                });
-            } else {
-                alert('You need more tickets to play the game!');
+            for (let i = 0; i < 5; i++) {
+                const ticket = document.createElement('div');
+                ticket.className = 'ticket';
+                ticket.textContent = 'Ticket ' + (i + 1);
+                ticket.onclick = () => revealTicket(ticket);
+                ticketsContainer.appendChild(ticket);
             }
         }
 
-        function updateBalance(amount) {
-            const balanceElement = document.getElementById('balance');
-            let currentBalance = parseInt(balanceElement.innerText);
-            balanceElement.innerText = currentBalance + amount;
-            localStorage.setItem('balance', balanceElement.innerText);
-        }
-
-        function updateTicketsDisplay(tickets) {
-            const ticketsElement = document.getElementById('tickets');
-            ticketsElement.innerText = tickets;
-            localStorage.setItem('tickets', tickets);
-        }
-
-        function showPrize(prize) {
-            const prizeDisplay = document.getElementById('prize-display');
-            prizeDisplay.innerText = prize;
-            prizeDisplay.classList.add('show');
-
+        function revealTicket(ticket) {
+            ticket.classList.add('revealed');
             setTimeout(() => {
-                prizeDisplay.classList.remove('show');
-                updateBalance(prize);
-            }, 2000);
+                const prizeDisplay = document.getElementById('prize-display');
+                prizeDisplay.textContent = 'You Win!';
+                prizeDisplay.classList.add('show');
+
+                setTimeout(() => {
+                    prizeDisplay.classList.remove('show');
+                }, 2000);
+            }, 500);
+        }
+
+        function showPage(pageId) {
+            const pages = document.querySelectorAll('.page');
+            pages.forEach(page => page.classList.remove('active'));
+
+            const activePage = document.getElementById(pageId);
+            activePage.classList.add('active');
+        }
+
+        function confirmSubscription() {
+            alert('Subscription confirmed! You have earned 1 ticket and 300 coins.');
+        }
+
+        function copyReferralLink() {
+            const referralLinkDisplay = document.getElementById('referral-link-display');
+            referralLinkDisplay.value = 'https://example.com/referral?user_id=' + userId;
+            referralLinkDisplay.select();
+            document.execCommand('copy');
+            alert('Referral link copied to clipboard!');
+        }
+
+        function sendReferralLink() {
+            alert('Referral link sent to your friends!');
         }
     </script>
 </body>
