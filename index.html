@@ -6,26 +6,29 @@
     <title>Game App</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@900&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@700&display=swap">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600;700&display=swap">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <style>
         body {
             font-family: 'Open Sans', sans-serif;
+            background-color: #f8f9fa;
+            color: #343a40;
         }
 
         h1 {
             font-family: 'Roboto', sans-serif;
-            font-weight: 900;
+            font-weight: 700;
+            color: #6c757d; /* Graphite color for headings */
         }
 
         .game-box {
-            border: 2px solid #dc3545; /* Красная обводка */
+            border: 2px solid #6c757d; /* Graphite color for border */
             border-radius: 10px;
             padding: 20px;
             margin-top: 20px;
             text-align: center;
-            background-color: rgba(255, 255, 255, 0.8);
+            background-color: rgba(0, 0, 0, 0.2);
         }
 
         .info-box {
@@ -41,40 +44,45 @@
             font-family: 'Roboto', sans-serif;
             font-weight: 900;
             font-size: 1.5em;
-            color: #495057; /* Цвет графита */
+            color: #6c757d; /* Graphite color for balance icon */
         }
 
         .task-info {
             display: flex;
             align-items: center;
             justify-content: space-between;
+            margin-top: 20px;
         }
 
         .task-info p {
             margin: 0;
+            font-size: 1.2em;
         }
 
         .navbar {
             padding: 10px;
         }
 
-        .ticket {
-            border: 2px solid #dc3545; /* Красная обводка */
-            padding: 10px;
-            margin: 5px;
-            font-size: 1.5em;
-            cursor: pointer;
-        }
-
-        .ticket.revealed {
-            background-color: #dc3545;
-            color: white;
-        }
-
         .btn-confirm {
-            background-color: #dc3545;
-            border-color: #dc3545;
-            color: white;
+            display: none;
+        }
+
+        .page {
+            display: none;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        .ticket {
+            cursor: pointer;
+            font-size: 1.5em;
+            margin: 5px;
+            padding: 10px;
+            border: 2px solid red; /* Red border for tickets */
+            border-radius: 5px;
+            background-color: rgba(0, 0, 0, 0.2);
         }
     </style>
 </head>
@@ -100,7 +108,7 @@
         <div id="lucky-game-page" class="page">
             <h1>Lucky Game</h1>
             <div id="tickets-container" class="d-flex flex-wrap justify-content-center">
-                <!-- Tickets will be added here via JavaScript -->
+                <!-- Tickets will be added here dynamically -->
             </div>
             <button class="btn btn-primary mt-3" onclick="startLuckyGame()">Start</button>
         </div>
@@ -111,7 +119,7 @@
             <p>Complete the tasks below to earn more tickets and coins.</p>
             <div class="task-info">
                 <p>Subscribe to <a href="https://t.me/fixicoin" target="_blank">Fixicoin Telegram</a></p>
-                <p>🎫 1 &nbsp; F 300 coins</p>
+                <p>🎫 1 &nbsp; <span class="balance-icon">F</span> 300 coins</p>
             </div>
             <button id="subscribe-button" class="btn btn-primary mt-3" onclick="confirmSubscription()">Confirm Subscription</button>
         </div>
@@ -187,7 +195,7 @@
 
         function confirmSubscription() {
             alert("Please confirm your subscription in the Telegram channel.");
-            // Здесь должна быть логика для проверки подписки пользователя
+            // Subscription logic
             setTimeout(function() {
                 alert("Subscription confirmed! You have earned 300 coins and 1 ticket.");
                 updateBalance(300);
@@ -215,13 +223,13 @@
         function generateReferralLink() {
             const referralLink = `https://t.me/FixiCoin_Bot/app?startapp=ref_${userId}`;
             document.getElementById('referral-link-display').value = referralLink;
-            // Логика для отображения рефералов
+            // Logic to display referrals
         }
 
         function copyReferralLink() {
             const referralLink = document.getElementById('referral-link-display');
             referralLink.select();
-            referralLink.setSelectionRange(0, 99999); // Для мобильных устройств
+            referralLink.setSelectionRange(0, 99999); // For mobile devices
             document.execCommand('copy');
             alert("Referral link copied to clipboard!");
         }
@@ -229,53 +237,24 @@
         function sendReferralLink() {
             const referralLink = document.getElementById('referral-link-display').value;
             const telegramUrl = `https://t.me/share/url?url=${encodeURIComponent(referralLink)}`;
-            window.open(telegramUrl, '_blank'); // Открыть ссылку в новой вкладке
+            window.open(telegramUrl, '_blank'); // Open link in new tab
         }
 
-    // Логика для мини-игры "Lucky Game"
-function startLuckyGame() {
-    if (userTickets >= 1) {
-        const ticketValues = [20, 20, 50, 50, 50, 50, 100, 100, 100, 300, 500, 1000];
-        const shuffledValues = ticketValues.sort(() => Math.random() - 0.5);
-        
-        // Уменьшаем количество билетов и обновляем на странице
-        userTickets--;
-        updateTicketsDisplay(userTickets);
-
-        // Отображаем билеты в интерфейсе
-        const ticketsContainer = document.getElementById('tickets-container');
-        ticketsContainer.innerHTML = '';
-        shuffledValues.forEach(value => {
-            const ticketElement = document.createElement('div');
-            ticketElement.classList.add('ticket');
-            ticketElement.textContent = value;
-            ticketElement.addEventListener('click', () => revealTicket(value));
-            ticketsContainer.appendChild(ticketElement);
-        });
-    } else {
-        alert("You don't have enough tickets to play. Earn more tickets by completing tasks!");
-    }
-}
-
-function revealTicket(value) {
-    const ticketsContainer = document.getElementById('tickets-container');
-    const tickets = ticketsContainer.getElementsByClassName('ticket');
-    
-    // Помечаем выбранный билет как открытый
-    for (let i = 0; i < tickets.length; i++) {
-        if (parseInt(tickets[i].textContent) === value) {
-            tickets[i].classList.add('revealed');
-            tickets[i].removeEventListener('click', revealTicket);
-            break;
+        // Logic for mini-game "Lucky Game"
+        function startLuckyGame() {
+            if (userTickets >= 1) {
+                const ticketValues = [20, 20, 50, 50, 50, 50, 100, 100, 200, 200, 200, 300, 300, 500];
+                const randomIndex = Math.floor(Math.random() * ticketValues.length);
+                const winnings = ticketValues[randomIndex];
+                alert(`Congratulations! You won ${winnings} coins.`);
+                updateBalance(winnings);
+                userTickets--;
+                updateTicketsDisplay(userTickets);
+            } else {
+                alert("Not enough tickets to play.");
+            }
         }
-    }
+    </script>
+</body>
+</html>
 
-    // Добавляем выигрыш к балансу
-    updateBalance(value);
-
-    // Проверяем, если билеты закончились, отключаем кнопку "Start"
-    if (userTickets === 0) {
-        const startButton = document.querySelector('#lucky-game-page .btn-primary');
-        startButton.disabled = true;
-    }
-}
