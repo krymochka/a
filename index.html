@@ -25,10 +25,13 @@
         .game-box {
             border: 2px solid #6c757d;
             border-radius: 10px;
-            padding: 20px;
+            padding: 40px;
             margin-top: 20px;
             text-align: center;
             background-color: rgba(0, 0, 0, 0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
         .info-box {
@@ -132,6 +135,36 @@
             font-size: 1.2em;
             margin-left: 10px;
         }
+
+        .play-button {
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5em;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+        }
+
+        .play-button:hover {
+            background-color: #0056b3;
+        }
+
+        .centered-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: calc(100vh - 70px); /* Subtracting navbar height */
+        }
+
+        .game-container {
+            width: 100%;
+            max-width: 800px;
+        }
     </style>
 </head>
 <body>
@@ -141,16 +174,17 @@
             <div class="profile-info">
                 <img id="user-avatar" src="" alt="User Avatar">
                 <span class="username" id="user-name">yarik.</span>
-                <span class="balance">450F</span>
+                <span class="balance"><span id="balance">450</span>F</span>
             </div>
-            <h1>Main</h1>
-            <div class="info-box">
-                <p><span class="balance-icon">F</span> <span id="balance">0</span> coins</p>
-                <p>🎫 <span id="tickets">3</span></p>
-            </div>
-            <div class="game-box">
-                <p>Lucky game</p>
-                <button class="btn btn-primary btn-sm" onclick="showPage('lucky-game-page')">Play</button>
+            <div class="centered-container">
+                <div class="game-container">
+                    <div class="game-box">
+                        <h1>Lucky Game</h1>
+                        <button class="play-button" onclick="showPage('lucky-game-page')">
+                            <i class="fas fa-play"></i>
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
 
