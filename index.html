@@ -170,7 +170,8 @@
             left: 10px;
             bottom: 60px;
             font-size: 1em;
-            background-color: #fff;
+            background-color: #333;
+            color: #fff;
             padding: 5px 10px;
             border-radius: 5px;
         }
@@ -210,6 +211,7 @@
                     <div class="game-box">
                         <h1>Lucky Game</h1>
                         <div class="ticket-balance">🎫 <span id="tickets">3</span></div>
+                        <button class="get-more-button button" onclick="showPage('referral-page')">Get more</button>
                         <button class="play-button" onclick="showPage('lucky-game-page')">
                             <i class="fas fa-play"></i>
                         </button>
@@ -251,10 +253,6 @@
             <button class="nav-button" id="main-link"><i class="fas fa-home"></i></button>
             <button class="nav-button" id="tasks-link"><i class="fas fa-tasks"></i></button>
             <button class="nav-button" id="referral-link"><i class="fas fa-user-friends"></i></button>
-        </div>
-
-        <div class="get-more-button">
-            <button class="button" onclick="showPage('referral-page')">Get more</button>
         </div>
 
     </div>
