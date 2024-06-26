@@ -54,11 +54,15 @@
             align-items: center;
             justify-content: space-between;
             margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #6c757d;
+            border-radius: 5px;
+            background-color: rgba(0, 0, 0, 0.1);
         }
 
         .task-info p {
             margin: 0;
-            font-size: 1.2em;
+            font-size: 1em;
         }
 
         .navbar {
@@ -248,8 +252,13 @@
             <div class="task-info">
                 <p>Subscribe to <a href="https://t.me/fixicoin" target="_blank">Fixicoin Telegram</a></p>
                 <p>🎫 1 &nbsp; <span class="balance-icon">F</span> 300 coins</p>
+                <button class="btn btn-primary" onclick="confirmTask(this)">Confirm</button>
             </div>
-            <button id="subscribe-button" class="btn btn-primary mt-3" onclick="confirmSubscription()">Confirm Subscription</button>
+            <div class="task-info">
+                <p>Invite 5 friends</p>
+                <p>🎫 2 &nbsp; <span class="balance-icon">F</span> 500 coins</p>
+                <button class="btn btn-primary" onclick="confirmTask(this)">Confirm</button>
+            </div>
         </div>
 
         <div id="referral-page" class="page">
@@ -317,14 +326,13 @@
             });
         }
 
-        function confirmSubscription() {
-            document.getElementById('subscribe-button').disabled = true;
-            document.getElementById('subscribe-button').innerText = 'Confirmed!';
+        function confirmTask(button) {
+            button.disabled = true;
+            button.innerText = 'Confirmed!';
             setTimeout(() => {
-                alert("Subscription confirmed! You earned 300 coins and 1 ticket.");
-                userTickets++;
-                updateBalance(300);
-                updateTicketsDisplay(userTickets);
+                alert("Task confirmed! You earned coins and tickets.");
+                // Update user tickets and balance logic
+                // ...
             }, 3000);
         }
 
