@@ -54,6 +54,10 @@
             align-items: center;
             justify-content: space-between;
             margin-top: 20px;
+            padding: 10px;
+            border: 2px solid #6c757d;
+            border-radius: 10px;
+            background-color: #fff;
         }
 
         .task-info p {
@@ -158,7 +162,6 @@
             justify-content: center;
             align-items: center;
             height: calc(100vh - 70px); /* Subtracting navbar height */
-            position: relative;
         }
 
         .game-container {
@@ -167,44 +170,26 @@
         }
 
         .ticket-balance {
-            position: fixed;
-            left: 10px;
-            bottom: 60px;
+            position: absolute;
+            top: 10px;
+            right: 10px;
             font-size: 1em;
-            background-color: #333;
-            color: #fff;
+            background-color: #fff;
             padding: 5px 10px;
             border-radius: 5px;
         }
 
-        .get-more-button {
-            position: fixed;
-            right: 10px;
-            bottom: 60px;
-        }
-
-        .button {
-            background-color: #4CAF50;
-            color: white;
-            padding: 10px 20px;
-            text-align: center;
-            text-decoration: none;
-            display: inline-block;
-            font-size: 16px;
-            margin: 4px 2px;
-            cursor: pointer;
-            border: none;
-            border-radius: 4px;
-        }
-
-        .fixi-coin-title {
+        .get-more-container {
             position: absolute;
-            top: 10%;
-            width: 100%;
-            text-align: center;
+            top: 10px;
+            right: 110px;
+        }
+
+        .game-title {
             font-size: 3em;
-            font-weight: bold;
-            color: #555;
+            font-weight: 700;
+            color: #6c757d;
+            margin-bottom: 20px;
         }
     </style>
 </head>
@@ -218,12 +203,13 @@
                 <span class="balance"><span id="balance">450</span>F</span>
             </div>
             <div class="centered-container">
-                <div class="fixi-coin-title">FIXI Coin</div>
                 <div class="game-container">
                     <div class="game-box">
-                        <h1>Lucky Game</h1>
+                        <h1 class="game-title">FIXI Coin</h1>
                         <div class="ticket-balance">🎫 <span id="tickets">3</span></div>
-                        <button class="get-more-button button" onclick="showPage('referral-page')">Get more</button>
+                        <div class="get-more-container">
+                            <button class="btn btn-primary" onclick="showPage('referral-page')">Get more</button>
+                        </div>
                         <button class="play-button" onclick="showPage('lucky-game-page')">
                             <i class="fas fa-play"></i>
                         </button>
@@ -245,8 +231,9 @@
             <div class="task-info">
                 <p>Subscribe to <a href="https://t.me/fixicoin" target="_blank">Fixicoin Telegram</a></p>
                 <p>🎫 1 &nbsp; <span class="balance-icon">F</span> 300 coins</p>
+                <button class="btn btn-primary confirm-button" onclick="confirmSubscription()">Confirm</button>
             </div>
-            <button id="subscribe-button" class="btn btn-primary mt-3" onclick="confirmSubscription()">Confirm Subscription</button>
+            <!-- Add more task-info divs as needed for other tasks -->
         </div>
 
         <div id="referral-page" class="page">
@@ -266,7 +253,6 @@
             <button class="nav-button" id="tasks-link"><i class="fas fa-tasks"></i></button>
             <button class="nav-button" id="referral-link"><i class="fas fa-user-friends"></i></button>
         </div>
-
     </div>
 
     <div id="prize-display" class="prize"></div>
@@ -279,6 +265,7 @@
         });
 
         const urlParams = new URLSearchParams(window.location.search);
+        const userId = urlParams.get('user_id');
         const username = urlParams.get('username');
         const photoUrl = urlParams.get('photo_url');
 
@@ -315,8 +302,9 @@
         }
 
         function confirmSubscription() {
-            document.getElementById('subscribe-button').disabled = true;
-            document.getElementById('subscribe-button').innerText = 'Confirmed!';
+            const subscribeButton = event.target;
+            subscribeButton.disabled = true;
+            subscribeButton.innerText = 'Confirmed!';
             setTimeout(() => {
                 alert("Subscription confirmed! You earned 300 coins and 1 ticket.");
                 userTickets++;
