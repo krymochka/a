@@ -53,16 +53,16 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-top: 20px;
+            margin-top: 10px;
             padding: 10px;
             border: 2px solid #6c757d;
             border-radius: 10px;
             background-color: #fff;
+            font-size: 0.9em;
         }
 
         .task-info p {
             margin: 0;
-            font-size: 1.2em;
         }
 
         .navbar {
@@ -233,7 +233,11 @@
                 <p>🎫 1 &nbsp; <span class="balance-icon">F</span> 300 coins</p>
                 <button class="btn btn-primary confirm-button" onclick="confirmSubscription()">Confirm</button>
             </div>
-            <!-- Add more task-info divs as needed for other tasks -->
+            <div class="task-info">
+                <p>Invite 5 friends to join</p>
+                <p>🎫 5 &nbsp; <span class="balance-icon">F</span> 1000 coins</p>
+                <button class="btn btn-primary confirm-button" onclick="confirmInvite()">Confirm</button>
+            </div>
         </div>
 
         <div id="referral-page" class="page">
@@ -261,16 +265,15 @@
     <script src="scripts.js"></script>
     <script>
         particlesJS.load('particles-js', 'particles.json', function() {
-            console.log('particles.js loaded - callback');
+            console.log('callback - particles.js config loaded');
         });
 
-        const urlParams = new URLSearchParams(window.location.search);
-        const userId = urlParams.get('user_id');
-        const username = urlParams.get('username');
-        const photoUrl = urlParams.get('photo_url');
+        const userId = 'user123'; // Example user ID, replace with actual user ID
+        const username = 'yarik.'; // Example username, replace with actual username
+        const photoUrl = ''; // Example photo URL, replace with actual URL
 
         if (username) {
-            document.getElementById('user-name').textContent = username;
+            document.getElementById('user-name').innerText = username;
         }
         if (photoUrl) {
             document.getElementById('user-avatar').src = photoUrl;
@@ -309,6 +312,18 @@
                 alert("Subscription confirmed! You earned 300 coins and 1 ticket.");
                 userTickets++;
                 updateBalance(300);
+                updateTicketsDisplay(userTickets);
+            }, 3000);
+        }
+
+        function confirmInvite() {
+            const inviteButton = event.target;
+            inviteButton.disabled = true;
+            inviteButton.innerText = 'Confirmed!';
+            setTimeout(() => {
+                alert("Invite confirmed! You earned 1000 coins and 5 tickets.");
+                userTickets += 5;
+                updateBalance(1000);
                 updateTicketsDisplay(userTickets);
             }, 3000);
         }
