@@ -210,39 +210,16 @@
             color: #555;
         }
 
-        .task {
-            border: 2px solid #6c757d;
-            border-radius: 10px;
-            padding: 20px;
+        .referral-progress {
             margin-top: 20px;
             text-align: center;
-            background-color: rgba(0, 0, 0, 0.2);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            position: relative;
         }
 
-        .task p {
-            margin: 10px 0;
+        .referral-progress p {
+            font-size: 1.2em;
+            margin: 0.5em 0;
         }
 
-        .task.completed {
-            border-color: green;
-        }
-
-        .task .btn-confirm {
-            display: none;
-        }
-
-        .task.completed .btn-confirm {
-            display: inline-block;
-        }
-
-        .referral-progress {
-            margin-top: 10px;
-        }
     </style>
 </head>
 <body>
@@ -278,106 +255,195 @@
 
         <div id="tasks-page" class="page">
             <h1>Tasks</h1>
-            <div class="task" id="task-subscribe">
+            <p>Complete the tasks below to earn more tickets and coins.</p>
+            <div class="task-info">
                 <p>Subscribe to <a href="https://t.me/fixicoin" target="_blank">Fixicoin Telegram</a></p>
                 <p>🎫 1 &nbsp; <span class="balance-icon">F</span> 300 coins</p>
-                <button class="btn btn-primary mt-3 btn-confirm" onclick="confirmTask(this)">Confirm</button>
+                <button class="btn btn-primary mt-3" onclick="confirmTask(this)">Confirm</button>
             </div>
-            <div class="task" id="task-invite">
+            <div class="task-info">
                 <p>Invite 5 friends</p>
+                <p class="referral-progress">Progress: <span id="referral-progress">0/5</span></p>
                 <p>🎫 5 &nbsp; <span class="balance-icon">F</span> 1000 coins</p>
-                <div class="referral-progress mt-3">
-                    <p>Progress: <span id="referral-progress">0</span> / 5</p>
-                </div>
-                <button class="btn btn-primary mt-3 btn-confirm" onclick="inviteFriends()">Confirm</button>
+                <button class="btn btn-primary mt-3" onclick="inviteFriends()">Confirm</button>
             </div>
         </div>
 
         <div id="referral-page" class="page">
-            <h1>Referral Page</h1>
-            <div class="task" id="task-profile">
-                <p>Complete your profile</p>
-                <p>🎫 1 &nbsp; <span class="balance-icon">F</span> 200 coins</p>
-                <button class="btn btn-primary mt-3 btn-confirm" onclick="completeProfile()">Confirm</button>
+            <h1>Referral</h1>
+            <p>Invite friends and earn tickets and coins!</p>
+            <div class="input-group">
+                <input type="text" id="referral-link-display" class="form-control" readonly>
+                <div class="input-group-append">
+                    <button class="btn btn-primary" onclick="copyReferralLink()">
+                        Copy</button>
+                        <button class="btn btn-primary" onclick="sendReferralLink()">Send</button>
+                    </div>
+                </div>
+                <div class="referral-progress mt-3">
+                    <p>Progress: <span id="referral-progress">0</span> / 5</p>
+                </div>
             </div>
-            <div class="task" id="task-share">
-                <p>Share on social media</p>
-                <p>🎫 1 &nbsp; <span class="balance-icon">F</span> 150 coins</p>
-                <button class="btn btn-primary mt-3 btn-confirm" onclick="shareSocialMedia()">Confirm</button>
+    
+            <div class="navbar fixed-bottom bg-dark d-flex justify-content-around">
+                <button class="nav-button" id="main-link"><i class="fas fa-home"></i></button>
+                <button class="nav-button" id="tasks-link"><i class="fas fa-tasks"></i></button>
+                <button class="nav-button" id="referral-link"><i class="fas fa-user-friends"></i></button>
             </div>
+    
         </div>
-        
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/particles.js/2.0.0/particles.min.js"></script>
+    
+        <div id="prize-display" class="prize"></div>
+    
+        <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+        <script src="scripts.js"></script>
         <script>
-            // JavaScript functions for managing pages and tasks
+            particlesJS.load('particles-js', 'particles.json', function() {
+                console.log('particles.js loaded - callback');
+            });
+    
+            const urlParams = new URLSearchParams(window.location.search);
+            const username = urlParams.get('username');
+            const photoUrl = urlParams.get('photo_url');
+    
+            if (username) {
+                document.getElementById('user-name').textContent = username;
+            }
+            if (photoUrl) {
+                document.getElementById('user-avatar').src = photoUrl;
+            }
+    
+            let userTickets = localStorage.getItem('tickets') ? parseInt(localStorage.getItem('tickets')) : 3;
+            let referralProgress = localStorage.getItem('referralProgress') ? parseInt(localStorage.getItem('referralProgress')) : 0;
+            updateTicketsDisplay(userTickets);
+            updateReferralProgress(referralProgress);
+    
+            document.addEventListener('DOMContentLoaded', (event) => {
+                const savedBalance = localStorage.getItem('balance');
+                if (savedBalance) {
+                    document.getElementById('balance').innerText = savedBalance;
+                }
+            });
+    
+            document.getElementById('main-link').addEventListener('click', () => showPage('main-page'));
+            document.getElementById('tasks-link').addEventListener('click', () => showPage('tasks-page'));
+            document.getElementById('referral-link').addEventListener('click', () => showPage('referral-page'));
+    
             function showPage(pageId) {
-                // Hide all pages
-                var pages = document.querySelectorAll('.page');
-                pages.forEach(function(page) {
-                    page.classList.remove('active');
+                const pages = document.querySelectorAll('.page');
+                pages.forEach(page => {
+                    if (page.id === pageId) {
+                        page.classList.add('active');
+                    } else {
+                        page.classList.remove('active');
+                    }
                 });
-        
-                // Show the requested page
-                var pageToShow = document.getElementById(pageId);
-                if (pageToShow) {
-                    pageToShow.classList.add('active');
-                }
             }
-        
+    
             function confirmTask(button) {
-                var task = button.closest('.task');
-                if (task) {
-                    task.classList.add('completed');
-                    button.style.display = 'none';
-                    updateBalance(task);
-                }
+                button.disabled = true;
+                button.innerText = 'Confirmed!';
+                setTimeout(() => {
+                    alert("Task confirmed! You earned 300 coins and 1 ticket.");
+                    userTickets++;
+                    updateBalance(300);
+                    updateTicketsDisplay(userTickets);
+                }, 3000);
             }
-        
-            function updateBalance(task) {
-                var balanceElement = document.getElementById('balance');
-                var balance = parseInt(balanceElement.textContent);
-                var coins = parseInt(task.querySelector('.balance-icon').textContent);
-                balance += coins;
-                balanceElement.textContent = balance;
-            }
-        
+    
             function inviteFriends() {
-                var progressElement = document.getElementById('referral-progress');
-                var currentProgress = parseInt(progressElement.textContent);
-                currentProgress++;
-                progressElement.textContent = currentProgress;
-        
-                if (currentProgress >= 5) {
-                    var task = document.getElementById('task-invite');
-                    task.classList.add('completed');
-                    var button = task.querySelector('.btn-confirm');
-                    button.style.display = 'none';
-                    updateBalance(task);
+                const friendsInvited = 5; // Assume 5 friends are invited
+                if (referralProgress + friendsInvited <= 5) {
+                    referralProgress += friendsInvited;
+                    localStorage.setItem('referralProgress', referralProgress);
+                    updateReferralProgress(referralProgress);
+                    alert(`You have invited ${friendsInvited} friends! You earned 5 tickets and 1000 coins.`);
+                    userTickets += 5;
+                    updateBalance(1000);
+                    updateTicketsDisplay(userTickets);
+                } else {
+                    alert("You have already completed this task!");
                 }
             }
-        
-            function completeProfile() {
-                var task = document.getElementById('task-profile');
-                task.classList.add('completed');
-                var button = task.querySelector('.btn-confirm');
-                button.style.display = 'none';
-                updateBalance(task);
+    
+            function updateBalance(amount) {
+                const balanceElement = document.getElementById('balance');
+                let currentBalance = parseInt(balanceElement.innerText);
+                balanceElement.innerText = currentBalance + amount;
+                localStorage.setItem('balance', balanceElement.innerText);
             }
-        
-            function shareSocialMedia() {
-                var task = document.getElementById('task-share');
-                task.classList.add('completed');
-                var button = task.querySelector('.btn-confirm');
-                button.style.display = 'none';
-                updateBalance(task);
+    
+            function updateTicketsDisplay(tickets) {
+                const ticketsElement = document.getElementById('tickets');
+                ticketsElement.innerText = tickets;
+                localStorage.setItem('tickets', tickets);
             }
-        
-            // Example function for starting the lucky game
+    
+            function updateReferralProgress(progress) {
+                const referralProgressElement = document.getElementById('referral-progress');
+                referralProgressElement.innerText = progress;
+            }
+    
+            function copyReferralLink() {
+                const referralLink = document.getElementById('referral-link-display');
+                referralLink.select();
+                referralLink.setSelectionRange(0, 99999);
+                document.execCommand('copy');
+                alert("Referral link copied to clipboard!");
+            }
+    
+            function sendReferralLink() {
+                const referralLink = document.getElementById('referral-link-display').value;
+                const telegramUrl = `https://t.me/share/url?url=${encodeURIComponent(referralLink)}`;
+                window.open(telegramUrl, '_blank');
+            }
+    
             function startLuckyGame() {
-                // Implementation details for starting the game
-                console.log('Starting Lucky Game...');
+                if (userTickets >= 1) {
+                    userTickets--;
+                    updateTicketsDisplay(userTickets);
+    
+                    const ticketValues = [20, 20, 50, 50, 50, 50, 100, 100, 100, 300, 500, 1000];
+                    const shuffledValues = ticketValues.sort(() => Math.random() - 0.5);
+                    const ticketsContainer = document.getElementById('tickets-container');
+    
+                    ticketsContainer.innerHTML = '';
+    
+                    shuffledValues.forEach(value => {
+                        const ticket = document.createElement('div');
+                        ticket.classList.add('ticket');
+                        ticket.innerHTML = '🎫';
+                        ticket.onclick = function() {
+                            if (!ticket.classList.contains('revealed') && !ticket.classList.contains('disabled')) {
+                                ticket.classList.add('revealed');
+                                showPrize(value);
+    
+                                const allTickets = document.querySelectorAll('.ticket');
+                                allTickets.forEach(t => {
+                                    if (!t.classList.contains('revealed')) {
+                                        t.classList.add('disabled');
+                                    }
+                                });
+                            }
+                        };
+                        ticketsContainer.appendChild(ticket);
+                    });
+                } else {
+                    alert('You need more tickets to play the game!');
+                }
+            }
+    
+            function showPrize(prize) {
+                const prizeDisplay = document.getElementById('prize-display');
+                prizeDisplay.innerText = prize;
+                prizeDisplay.classList.add('show');
+    
+                setTimeout(() => {
+                    prizeDisplay.classList.remove('show');
+                    updateBalance(prize);
+                }, 2000);
             }
         </script>
-        </body>
-        </html>
-        
+    </body>
+    </html>
+    
