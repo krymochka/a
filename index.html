@@ -50,10 +50,11 @@
         }
 
         .task-info {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
+            border: 2px solid #6c757d;
+            border-radius: 5px;
+            padding: 10px;
             margin-top: 20px;
+            max-width: 600px; /* Пример ширины задания */
         }
 
         .task-info p {
@@ -259,13 +260,13 @@
             <div class="task-info">
                 <p>Subscribe to <a href="https://t.me/fixicoin" target="_blank">Fixicoin Telegram</a></p>
                 <p>🎫 1 &nbsp; <span class="balance-icon">F</span> 300 coins</p>
-                <button class="btn btn-primary mt-3" onclick="confirmTask(this)">Confirm</button>
+                <button class="btn btn-primary mt-3 btn-confirm" onclick="confirmTask(this)">Confirm</button>
             </div>
             <div class="task-info">
                 <p>Invite 5 friends</p>
-                <p class="referral-progress">Progress: <span id="referral-progress">0/5</span></p>
+                <p class="referral-progress">Progress: <span id="referral-progress">0</span> / 5</p>
                 <p>🎫 5 &nbsp; <span class="balance-icon">F</span> 1000 coins</p>
-                <button class="btn btn-primary mt-3" onclick="inviteFriends()">Confirm</button>
+                <button class="btn btn-primary mt-3 btn-confirm" onclick="inviteFriends()">Confirm</button>
             </div>
         </div>
 
@@ -291,9 +292,9 @@
                 <button class="nav-button" id="referral-link"><i class="fas fa-user-friends"></i></button>
             </div>
     
-        </div>
+            <div id="prize-display" class="prize"></div>
     
-        <div id="prize-display" class="prize"></div>
+        </div>
     
         <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
         <script src="scripts.js"></script>
