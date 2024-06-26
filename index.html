@@ -167,20 +167,16 @@
         }
 
         .ticket-balance {
-            position: fixed;
-            left: 10px;
-            bottom: 60px;
             font-size: 1em;
             background-color: #333;
             color: #fff;
             padding: 5px 10px;
             border-radius: 5px;
+            margin-bottom: 10px;
         }
 
         .get-more-button {
-            position: fixed;
-            right: 10px;
-            bottom: 60px;
+            margin-top: 10px;
         }
 
         .button {
@@ -222,11 +218,11 @@
                 <div class="game-container">
                     <div class="game-box">
                         <h1>Lucky Game</h1>
-                        <div class="ticket-balance">🎫 <span id="tickets">3</span></div>
-                        <button class="get-more-button button" onclick="showPage('referral-page')">Get more</button>
                         <button class="play-button" onclick="showPage('lucky-game-page')">
                             <i class="fas fa-play"></i>
                         </button>
+                        <div class="ticket-balance">🎫 <span id="tickets">3</span></div>
+                        <button class="get-more-button button" onclick="showPage('referral-page')">Get more</button>
                     </div>
                 </div>
             </div>
