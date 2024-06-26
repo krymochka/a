@@ -53,16 +53,12 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-top: 10px;
-            padding: 10px;
-            border: 2px solid #6c757d;
-            border-radius: 10px;
-            background-color: rgba(0, 0, 0, 0.2);
-            font-size: 0.9em;
+            margin-top: 20px;
         }
 
         .task-info p {
             margin: 0;
+            font-size: 1.2em;
         }
 
         .navbar {
@@ -162,6 +158,7 @@
             justify-content: center;
             align-items: center;
             height: calc(100vh - 70px); /* Subtracting navbar height */
+            position: relative;
         }
 
         .game-container {
@@ -170,27 +167,44 @@
         }
 
         .ticket-balance {
-            position: absolute;
-            bottom: 70px;
+            position: fixed;
             left: 10px;
+            bottom: 60px;
             font-size: 1em;
-            background-color: rgba(0, 0, 0, 0.5);
+            background-color: #333;
+            color: #fff;
             padding: 5px 10px;
             border-radius: 5px;
-            border: 2px solid #fff;
         }
 
-        .get-more-container {
-            position: absolute;
-            bottom: 70px;
+        .get-more-button {
+            position: fixed;
             right: 10px;
+            bottom: 60px;
         }
 
-        .game-title {
+        .button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 4px 2px;
+            cursor: pointer;
+            border: none;
+            border-radius: 4px;
+        }
+
+        .fixi-coin-title {
+            position: absolute;
+            top: 10%;
+            width: 100%;
+            text-align: center;
             font-size: 3em;
-            font-weight: 700;
-            color: #6c757d;
-            margin-bottom: 20px;
+            font-weight: bold;
+            color: #555;
         }
     </style>
 </head>
@@ -203,14 +217,13 @@
                 <span class="username" id="user-name">yarik.</span>
                 <span class="balance"><span id="balance">450</span>F</span>
             </div>
-            <h1 class="game-title">FIXI Coin</h1>
             <div class="centered-container">
+                <div class="fixi-coin-title">FIXI Coin</div>
                 <div class="game-container">
                     <div class="game-box">
+                        <h1>Lucky Game</h1>
                         <div class="ticket-balance">🎫 <span id="tickets">3</span></div>
-                        <div class="get-more-container">
-                            <button class="btn btn-primary" onclick="showPage('referral-page')">Get more</button>
-                        </div>
+                        <button class="get-more-button button" onclick="showPage('referral-page')">Get more</button>
                         <button class="play-button" onclick="showPage('lucky-game-page')">
                             <i class="fas fa-play"></i>
                         </button>
@@ -232,13 +245,8 @@
             <div class="task-info">
                 <p>Subscribe to <a href="https://t.me/fixicoin" target="_blank">Fixicoin Telegram</a></p>
                 <p>🎫 1 &nbsp; <span class="balance-icon">F</span> 300 coins</p>
-                <button class="btn btn-primary confirm-button" onclick="confirmSubscription()">Confirm</button>
             </div>
-            <div class="task-info">
-                <p>Invite 5 friends to join</p>
-                <p>🎫 5 &nbsp; <span class="balance-icon">F</span> 1000 coins</p>
-                <button class="btn btn-primary confirm-button" onclick="confirmInvite()">Confirm</button>
-            </div>
+            <button id="subscribe-button" class="btn btn-primary mt-3" onclick="confirmSubscription()">Confirm Subscription</button>
         </div>
 
         <div id="referral-page" class="page">
@@ -258,6 +266,7 @@
             <button class="nav-button" id="tasks-link"><i class="fas fa-tasks"></i></button>
             <button class="nav-button" id="referral-link"><i class="fas fa-user-friends"></i></button>
         </div>
+
     </div>
 
     <div id="prize-display" class="prize"></div>
@@ -266,15 +275,15 @@
     <script src="scripts.js"></script>
     <script>
         particlesJS.load('particles-js', 'particles.json', function() {
-            console.log('callback - particles.js config loaded');
+            console.log('particles.js loaded - callback');
         });
 
-        const userId = 'user123'; // Example user ID, replace with actual user ID
-        const username = 'yarik.'; // Example username, replace with actual username
-        const photoUrl = ''; // Example photo URL, replace with actual URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const username = urlParams.get('username');
+        const photoUrl = urlParams.get('photo_url');
 
         if (username) {
-            document.getElementById('user-name').innerText = username;
+            document.getElementById('user-name').textContent = username;
         }
         if (photoUrl) {
             document.getElementById('user-avatar').src = photoUrl;
@@ -306,25 +315,12 @@
         }
 
         function confirmSubscription() {
-            const subscribeButton = event.target;
-            subscribeButton.disabled = true;
-            subscribeButton.innerText = 'Confirmed!';
+            document.getElementById('subscribe-button').disabled = true;
+            document.getElementById('subscribe-button').innerText = 'Confirmed!';
             setTimeout(() => {
                 alert("Subscription confirmed! You earned 300 coins and 1 ticket.");
                 userTickets++;
                 updateBalance(300);
-                updateTicketsDisplay(userTickets);
-            }, 3000);
-        }
-
-        function confirmInvite() {
-            const inviteButton = event.target;
-            inviteButton.disabled = true;
-            inviteButton.innerText = 'Confirmed!';
-            setTimeout(() => {
-                alert("Invite confirmed! You earned 1000 coins and 5 tickets.");
-                userTickets += 5;
-                updateBalance(1000);
                 updateTicketsDisplay(userTickets);
             }, 3000);
         }
