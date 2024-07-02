@@ -59,11 +59,22 @@
             justify-content: center;
             align-items: center;
             background-color: rgba(0, 0, 0, 0.1);
+            position: relative;
         }
 
         .task-info p {
             margin: 0;
             font-size: 1.2em;
+        }
+
+        .referral-progress {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .referral-progress p {
+            font-size: 1.2em;
+            margin: 0.5em 0;
         }
 
         .navbar {
@@ -122,6 +133,11 @@
             color: #fff;
             margin-bottom: 20px;
             border-radius: 5px;
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            right: 10px;
+            display: none; /* Hide profile info by default */
         }
 
         .profile-info img {
@@ -231,11 +247,6 @@
     <div id="particles-js"></div>
     <div class="container mt-5">
         <div id="main-page" class="page active">
-            <div class="profile-info">
-                <img id="user-avatar" src="user-avatar.jpg" alt="User Avatar">
-                <span class="username" id="user-name">yarik.</span>
-                <span class="balance"><span id="balance">450</span>F</span>
-            </div>
             <div class="centered-container">
                 <div class="fixi-coin-title">FIXI Coin</div>
                 <div class="game-container">
@@ -271,27 +282,35 @@
                 <p>🎫 5 &nbsp; <span class="balance-icon">F</span> 1000 coins</p>
                 <button class="btn btn-primary mt-3" onclick="inviteFriends()">Confirm</button>
             </div>
+            <div class="referral-progress">
+                <p>Referral Progress: <span id="referral-progress">0</span>/5</p>
+            </div>
         </div>
 
         <div id="referral-page" class="page">
             <h1>Referral</h1>
-            <p>Invite friends and earn tickets and coins!</p>
-            <div class="input-group">
-                <input type="text" id="referral-link-display" class="form-control" readonly>
-                <div class="input-group-append">
-                    <button class="btn btn-primary" onclick="copyReferralLink()">Copy</button>
-                    <button class="btn btn-primary" onclick="sendReferralLink()">Send</button>
-                </div>
+            <p>Invite your friends to earn more rewards!</p>
+            <div class="referral-link">
+                <input type="text" id="referral-link-display" value="https://example.com/referral?ref=yourusername" readonly>
+                <button class="btn btn-primary mt-3" onclick="copyReferralLink()">Copy Link</button>
+                <button class="btn btn-primary mt-3" onclick="sendReferralLink()">Share via Telegram</button>
+            </div>
+            <div class="referral-progress">
+                <p>Referral Progress: <span id="referral-progress">0</span>/5</p>
             </div>
         </div>
-
-        <div id="prize-display" class="prize"></div>
 
         <div class="navbar fixed-bottom bg-dark d-flex justify-content-around">
             <button class="nav-button" id="main-link" onclick="showPage('main-page')"><i class="fas fa-home"></i></button>
             <button class="nav-button" id="tasks-link" onclick="showPage('tasks-page')"><i class="fas fa-tasks"></i></button>
             <button class="nav-button" id="referral-link" onclick="showPage('referral-page')"><i class="fas fa-user-friends"></i></button>
         </div>
+
+        <div class="profile-info">
+            <img id="user-avatar" src="" alt="User Avatar">
+            <span class="username" id="user-name"></span>
+        </div>
+
     </div>
 
     <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
@@ -307,6 +326,7 @@
 
         if (username) {
             document.getElementById('user-name').textContent = username;
+            document.querySelector('.profile-info').style.display = 'flex'; // Show profile info on main page only
         }
         if (photoUrl) {
             document.getElementById('user-avatar').src = photoUrl;
@@ -319,7 +339,7 @@
 
         document.addEventListener('DOMContentLoaded', (event) => {
             const savedBalance = localStorage.getItem('balance');
-            if (savedBalance) {
+            if (savedBalance && document.getElementById('balance')) {
                 document.getElementById('balance').innerText = savedBalance;
             }
         });
@@ -367,20 +387,26 @@
 
         function updateBalance(amount) {
             const balanceElement = document.getElementById('balance');
-            let currentBalance = parseInt(balanceElement.innerText);
-            balanceElement.innerText = currentBalance + amount;
-            localStorage.setItem('balance', balanceElement.innerText);
+            if (balanceElement) {
+                let currentBalance = parseInt(balanceElement.innerText);
+                balanceElement.innerText = currentBalance + amount;
+                localStorage.setItem('balance', balanceElement.innerText);
+            }
         }
 
         function updateTicketsDisplay(tickets) {
             const ticketsElement = document.getElementById('tickets');
-            ticketsElement.innerText = tickets;
-            localStorage.setItem('tickets', tickets);
+            if (ticketsElement) {
+                ticketsElement.innerText = tickets;
+                localStorage.setItem('tickets', tickets);
+            }
         }
 
         function updateReferralProgress(progress) {
-            const referralProgressElement = document.getElementById('referral-progress');
-            referralProgressElement.innerText = progress;
+            const referralProgressElements = document.querySelectorAll('#referral-progress');
+            referralProgressElements.forEach(element => {
+                element.innerText = progress;
+            });
         }
 
         function copyReferralLink() {
