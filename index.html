@@ -277,161 +277,172 @@
                 <div class="input-group-append">
                     <button class="btn btn-primary" onclick="copyReferralLink()">
                         Copy</button>
-                        <button class="btn btn-primary" onclick="sendReferralLink()">Send</button>
-                    </div>
+                    <button class="btn btn-primary" onclick="sendReferralLink()">
+                        Send</button>
                 </div>
             </div>
-
-            <div class="navbar fixed-bottom bg-dark d-flex justify-content-around">
-                <button class="nav-button" id="main-link"><i class="fas fa-home"></i></button>
-                <button class="nav-button" id="tasks-link"><i class="fas fa-tasks"></i></button>
-                <button class="nav-button" id="referral-link"><i class="fas fa-user-friends"></i></button>
+            <div class="referral-progress">
+                <p>Referral Progress: <span id="referral-progress">0</span>/5</p>
             </div>
-
-            <div id="prize-display" class="prize"></div>
-
         </div>
 
-        <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
-        <script src="scripts.js"></script>
-        <script>
-            particlesJS.load('particles-js', 'particles.json', function() {
-                console.log('particles.js loaded - callback');
-            });
+        <div class="navbar fixed-bottom bg-dark d-flex justify-content-around">
+            <button class="nav-button" id="main-link"><i class="fas fa-home"></i></button>
+            <button class="nav-button" id="tasks-link"><i class="fas fa-tasks"></i></button>
+            <button class="nav-button" id="referral-link"><i class="fas fa-user-friends"></i></button>
+        </div>
 
-            const urlParams = new URLSearchParams(window.location.search);
-            const username = urlParams.get('username');
-            const photoUrl = urlParams.get('photo_url');
+        <div id="prize-display" class="prize"></div>
+    </div>
 
-            if (username) {
-                document.getElementById('user-name').textContent = username;
+    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+    <script src="scripts.js"></script>
+    <script>
+        particlesJS.load('particles-js', 'particles.json', function() {
+            console.log('particles.js loaded - callback');
+        });
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const username = urlParams.get('username');
+        const photoUrl = urlParams.get('photo_url');
+
+        if (username) {
+            document.getElementById('user-name').textContent = username;
+        }
+        if (photoUrl) {
+            document.getElementById('user-avatar').src = photoUrl;
+        }
+
+        let userTickets = localStorage.getItem('tickets') ? parseInt(localStorage.getItem('tickets')) : 3;
+        let referralProgress = localStorage.getItem('referralProgress') ? parseInt(localStorage.getItem('referralProgress')) : 0;
+        updateTicketsDisplay(userTickets);
+        updateReferralProgress(referralProgress);
+
+        document.addEventListener('DOMContentLoaded', (event) => {
+            const savedBalance = localStorage.getItem('balance');
+            if (savedBalance) {
+                document.getElementById('balance').innerText = savedBalance;
             }
-            if (photoUrl) {
-                document.getElementById('user-avatar').src = photoUrl;
-            }
+        });
 
-            let userTickets = localStorage.getItem('tickets') ? parseInt(localStorage.getItem('tickets')) : 3;
-            updateTicketsDisplay(userTickets);
+        document.getElementById('main-link').addEventListener('click', () => showPage('main-page'));
+        document.getElementById('tasks-link').addEventListener('click', () => showPage('tasks-page'));
+        document.getElementById('referral-link').addEventListener('click', () => showPage('referral-page'));
 
-            document.addEventListener('DOMContentLoaded', (event) => {
-                const savedBalance = localStorage.getItem('balance');
-                if (savedBalance) {
-                    document.getElementById('balance').innerText = savedBalance;
+        function showPage(pageId) {
+            const pages = document.querySelectorAll('.page');
+            pages.forEach(page => {
+                if (page.id === pageId) {
+                    page.classList.add('active');
+                } else {
+                    page.classList.remove('active');
                 }
             });
+        }
 
-            document.getElementById('main-link').addEventListener('click', () => showPage('main-page'));
-            document.getElementById('tasks-link').addEventListener('click', () => showPage('tasks-page'));
-            document.getElementById('referral-link').addEventListener('click', () => showPage('referral-page'));
+        function confirmTask(button) {
+            button.disabled = true;
+            button.innerText = 'Confirmed!';
+            setTimeout(() => {
+                alert("Task confirmed! You earned 300 coins and 1 ticket.");
+                userTickets++;
+                updateBalance(300);
+                updateTicketsDisplay(userTickets);
+            }, 3000);
+        }
 
-            function showPage(pageId) {
-                const pages = document.querySelectorAll('.page');
-                pages.forEach(page => {
-                    if (page.id === pageId) {
-                        page.classList.add('active');
-                    } else {
-                        page.classList.remove('active');
-                    }
+        function inviteFriends() {
+            const friendsInvited = 5; // Assume 5 friends are invited
+            if (referralProgress + friendsInvited <= 5) {
+                referralProgress += friendsInvited;
+                localStorage.setItem('referralProgress', referralProgress);
+                alert(`You have invited ${friendsInvited} friends! You earned 5 tickets and 1000 coins.`);
+                userTickets += 5;
+                updateBalance(1000);
+                updateTicketsDisplay(userTickets);
+                updateReferralProgress(referralProgress);
+            } else {
+                alert("You have already completed this task!");
+            }
+        }
+
+        function updateBalance(amount) {
+            const balanceElement = document.getElementById('balance');
+            let currentBalance = parseInt(balanceElement.innerText);
+            balanceElement.innerText = currentBalance + amount;
+            localStorage.setItem('balance', balanceElement.innerText);
+        }
+
+        function updateTicketsDisplay(tickets) {
+            const ticketsElement = document.getElementById('tickets');
+            ticketsElement.innerText = tickets;
+            localStorage.setItem('tickets', tickets);
+        }
+
+        function updateReferralProgress(progress) {
+            const progressElement = document.getElementById('referral-progress');
+            progressElement.innerText = progress;
+        }
+
+        function copyReferralLink() {
+            const referralLink = document.getElementById('referral-link-display');
+            referralLink.select();
+            referralLink.setSelectionRange(0, 99999);
+            document.execCommand('copy');
+            alert("Referral link copied to clipboard!");
+        }
+
+        function sendReferralLink() {
+            const referralLink = "https://t.me/FixiCoin_Bot";
+            const telegramUrl = `https://t.me/share/url?url=${encodeURIComponent(referralLink)}`;
+            window.open(telegramUrl, '_blank');
+        }
+
+        function startLuckyGame() {
+            if (userTickets >= 1) {
+                userTickets--;
+                updateTicketsDisplay(userTickets);
+
+                const ticketValues = [20, 20, 50, 50, 50, 50, 100, 100, 100, 300, 500, 1000];
+                const shuffledValues = ticketValues.sort(() => Math.random() - 0.5);
+                const ticketsContainer = document.getElementById('tickets-container');
+
+                ticketsContainer.innerHTML = '';
+
+                shuffledValues.forEach(value => {
+                    const ticket = document.createElement('div');
+                    ticket.classList.add('ticket');
+                    ticket.innerHTML = '🎫';
+                    ticket.onclick = function() {
+                        if (!ticket.classList.contains('revealed') && !ticket.classList.contains('disabled')) {
+                            ticket.classList.add('revealed');
+                            showPrize(value);
+
+                            const allTickets = document.querySelectorAll('.ticket');
+                            allTickets.forEach(t => {
+                                if (!t.classList.contains('revealed')) {
+                                    t.classList.add('disabled');
+                                }
+                            });
+                        }
+                    };
+                    ticketsContainer.appendChild(ticket);
                 });
+            } else {
+                alert('You need more tickets to play the game!');
             }
+        }
 
-            function confirmTask(button) {
-                button.disabled = true;
-                button.innerText = 'Confirmed!';
-                setTimeout(() => {
-                    alert("Task confirmed! You earned 300 coins and 1 ticket.");
-                    userTickets++;
-                    updateBalance(300);
-                    updateTicketsDisplay(userTickets);
-                }, 3000);
-            }
+        function showPrize(prize) {
+            const prizeDisplay = document.getElementById('prize-display');
+            prizeDisplay.innerText = prize;
+            prizeDisplay.classList.add('show');
 
-            function inviteFriends() {
-                const friendsInvited = 5; // Assume 5 friends are invited
-                if (referralProgress + friendsInvited <= 5) {
-                    referralProgress += friendsInvited;
-                    localStorage.setItem('referralProgress', referralProgress);
-                    alert(`You have invited ${friendsInvited} friends! You earned 5 tickets and 1000 coins.`);
-                    userTickets += 5;
-                    updateBalance(1000);
-                    updateTicketsDisplay(userTickets);
-                } else {
-                    alert("You have already completed this task!");
-                }
-            }
-
-            function updateBalance(amount) {
-                const balanceElement = document.getElementById('balance');
-                let currentBalance = parseInt(balanceElement.innerText);
-                balanceElement.innerText = currentBalance + amount;
-                localStorage.setItem('balance', balanceElement.innerText);
-            }
-
-            function updateTicketsDisplay(tickets) {
-                const ticketsElement = document.getElementById('tickets');
-                ticketsElement.innerText = tickets;
-                localStorage.setItem('tickets', tickets);
-            }
-
-            function copyReferralLink() {
-                const referralLink = document.getElementById('referral-link-display');
-                referralLink.select();
-                referralLink.setSelectionRange(0, 99999);
-                document.execCommand('copy');
-                alert("Referral link copied to clipboard!");
-            }
-
-            function sendReferralLink() {
-                const referralLink = "https://t.me/FixiCoin_Bot";
-                const telegramUrl = `https://t.me/share/url?url=${encodeURIComponent(referralLink)}`;
-                window.open(telegramUrl, '_blank');
-            }
-
-            function startLuckyGame() {
-                if (userTickets >= 1) {
-                    userTickets--;
-                    updateTicketsDisplay(userTickets);
-
-                    const ticketValues = [20, 20, 50, 50, 50, 50, 100, 100, 100, 300, 500, 1000];
-                    const shuffledValues = ticketValues.sort(() => Math.random() - 0.5);
-                    const ticketsContainer = document.getElementById('tickets-container');
-
-                    ticketsContainer.innerHTML = '';
-
-                    shuffledValues.forEach(value => {
-                        const ticket = document.createElement('div');
-                        ticket.classList.add('ticket');
-                        ticket.innerHTML = '🎫';
-                        ticket.onclick = function() {
-                            if (!ticket.classList.contains('revealed') && !ticket.classList.contains('disabled')) {
-                                ticket.classList.add('revealed');
-                                showPrize(value);
-
-                                const allTickets = document.querySelectorAll('.ticket');
-                                allTickets.forEach(t => {
-                                    if (!t.classList.contains('revealed')) {
-                                        t.classList.add('disabled');
-                                    }
-                                });
-                            }
-                        };
-                        ticketsContainer.appendChild(ticket);
-                    });
-                } else {
-                    alert('You need more tickets to play the game!');
-                }
-            }
-
-            function showPrize(prize) {
-                const prizeDisplay = document.getElementById('prize-display');
-                prizeDisplay.innerText = prize;
-                prizeDisplay.classList.add('show');
-
-                setTimeout(() => {
-                    prizeDisplay.classList.remove('show');
-                    updateBalance(prize);
-                }, 2000);
-            }
-        </script>
-    </body>
-    </html>
+            setTimeout(() => {
+                prizeDisplay.classList.remove('show');
+                updateBalance(prize);
+            }, 2000);
+        }
+    </script>
+</body>
+</html>
