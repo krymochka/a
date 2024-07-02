@@ -264,7 +264,6 @@
             </div>
             <div class="task-info">
                 <p>Invite 5 friends</p>
-                <p class="referral-progress">Progress: <span id="referral-progress">0</span> / 5</p>
                 <p>🎫 5 &nbsp; <span class="balance-icon">F</span> 1000 coins</p>
                 <button class="btn btn-primary mt-3 btn-confirm" onclick="inviteFriends()">Confirm</button>
             </div>
@@ -280,9 +279,6 @@
                         Copy</button>
                         <button class="btn btn-primary" onclick="sendReferralLink()">Send</button>
                     </div>
-                </div>
-                <div class="referral-progress mt-3">
-                    <p>Progress: <span id="referral-progress">0</span> / 5</p>
                 </div>
             </div>
     
@@ -317,7 +313,6 @@
             let userTickets = localStorage.getItem('tickets') ? parseInt(localStorage.getItem('tickets')) : 3;
             let referralProgress = localStorage.getItem('referralProgress') ? parseInt(localStorage.getItem('referralProgress')) : 0;
             updateTicketsDisplay(userTickets);
-            updateReferralProgress(referralProgress);
     
             document.addEventListener('DOMContentLoaded', (event) => {
                 const savedBalance = localStorage.getItem('balance');
@@ -357,7 +352,6 @@
                 if (referralProgress + friendsInvited <= 5) {
                     referralProgress += friendsInvited;
                     localStorage.setItem('referralProgress', referralProgress);
-                    updateReferralProgress(referralProgress);
                     alert(`You have invited ${friendsInvited} friends! You earned 5 tickets and 1000 coins.`);
                     userTickets += 5;
                     updateBalance(1000);
@@ -380,11 +374,6 @@
                 localStorage.setItem('tickets', tickets);
             }
     
-            function updateReferralProgress(progress) {
-                const referralProgressElement = document.getElementById('referral-progress');
-                referralProgressElement.innerText = progress;
-            }
-    
             function copyReferralLink() {
                 const referralLink = document.getElementById('referral-link-display');
                 referralLink.select();
@@ -394,7 +383,7 @@
             }
     
             function sendReferralLink() {
-                const referralLink = document.getElementById('referral-link-display').value;
+                const referralLink = "https://t.me/FixiCoin_Bot";
                 const telegramUrl = `https://t.me/share/url?url=${encodeURIComponent(referralLink)}`;
                 window.open(telegramUrl, '_blank');
             }
@@ -447,4 +436,3 @@
         </script>
     </body>
     </html>
-    
