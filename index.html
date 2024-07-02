@@ -281,50 +281,49 @@
                     </div>
                 </div>
             </div>
-    
+
             <div class="navbar fixed-bottom bg-dark d-flex justify-content-around">
                 <button class="nav-button" id="main-link"><i class="fas fa-home"></i></button>
                 <button class="nav-button" id="tasks-link"><i class="fas fa-tasks"></i></button>
                 <button class="nav-button" id="referral-link"><i class="fas fa-user-friends"></i></button>
             </div>
-    
+
             <div id="prize-display" class="prize"></div>
-    
+
         </div>
-    
+
         <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
         <script src="scripts.js"></script>
         <script>
             particlesJS.load('particles-js', 'particles.json', function() {
                 console.log('particles.js loaded - callback');
             });
-    
+
             const urlParams = new URLSearchParams(window.location.search);
             const username = urlParams.get('username');
             const photoUrl = urlParams.get('photo_url');
-    
+
             if (username) {
                 document.getElementById('user-name').textContent = username;
             }
             if (photoUrl) {
                 document.getElementById('user-avatar').src = photoUrl;
             }
-    
+
             let userTickets = localStorage.getItem('tickets') ? parseInt(localStorage.getItem('tickets')) : 3;
-            let referralProgress = localStorage.getItem('referralProgress') ? parseInt(localStorage.getItem('referralProgress')) : 0;
             updateTicketsDisplay(userTickets);
-    
+
             document.addEventListener('DOMContentLoaded', (event) => {
                 const savedBalance = localStorage.getItem('balance');
                 if (savedBalance) {
                     document.getElementById('balance').innerText = savedBalance;
                 }
             });
-    
+
             document.getElementById('main-link').addEventListener('click', () => showPage('main-page'));
             document.getElementById('tasks-link').addEventListener('click', () => showPage('tasks-page'));
             document.getElementById('referral-link').addEventListener('click', () => showPage('referral-page'));
-    
+
             function showPage(pageId) {
                 const pages = document.querySelectorAll('.page');
                 pages.forEach(page => {
@@ -335,7 +334,7 @@
                     }
                 });
             }
-    
+
             function confirmTask(button) {
                 button.disabled = true;
                 button.innerText = 'Confirmed!';
@@ -346,7 +345,7 @@
                     updateTicketsDisplay(userTickets);
                 }, 3000);
             }
-    
+
             function inviteFriends() {
                 const friendsInvited = 5; // Assume 5 friends are invited
                 if (referralProgress + friendsInvited <= 5) {
@@ -360,20 +359,20 @@
                     alert("You have already completed this task!");
                 }
             }
-    
+
             function updateBalance(amount) {
                 const balanceElement = document.getElementById('balance');
                 let currentBalance = parseInt(balanceElement.innerText);
                 balanceElement.innerText = currentBalance + amount;
                 localStorage.setItem('balance', balanceElement.innerText);
             }
-    
+
             function updateTicketsDisplay(tickets) {
                 const ticketsElement = document.getElementById('tickets');
                 ticketsElement.innerText = tickets;
                 localStorage.setItem('tickets', tickets);
             }
-    
+
             function copyReferralLink() {
                 const referralLink = document.getElementById('referral-link-display');
                 referralLink.select();
@@ -381,24 +380,24 @@
                 document.execCommand('copy');
                 alert("Referral link copied to clipboard!");
             }
-    
+
             function sendReferralLink() {
                 const referralLink = "https://t.me/FixiCoin_Bot";
                 const telegramUrl = `https://t.me/share/url?url=${encodeURIComponent(referralLink)}`;
                 window.open(telegramUrl, '_blank');
             }
-    
+
             function startLuckyGame() {
                 if (userTickets >= 1) {
                     userTickets--;
                     updateTicketsDisplay(userTickets);
-    
+
                     const ticketValues = [20, 20, 50, 50, 50, 50, 100, 100, 100, 300, 500, 1000];
                     const shuffledValues = ticketValues.sort(() => Math.random() - 0.5);
                     const ticketsContainer = document.getElementById('tickets-container');
-    
+
                     ticketsContainer.innerHTML = '';
-    
+
                     shuffledValues.forEach(value => {
                         const ticket = document.createElement('div');
                         ticket.classList.add('ticket');
@@ -407,7 +406,7 @@
                             if (!ticket.classList.contains('revealed') && !ticket.classList.contains('disabled')) {
                                 ticket.classList.add('revealed');
                                 showPrize(value);
-    
+
                                 const allTickets = document.querySelectorAll('.ticket');
                                 allTickets.forEach(t => {
                                     if (!t.classList.contains('revealed')) {
@@ -422,12 +421,12 @@
                     alert('You need more tickets to play the game!');
                 }
             }
-    
+
             function showPrize(prize) {
                 const prizeDisplay = document.getElementById('prize-display');
                 prizeDisplay.innerText = prize;
                 prizeDisplay.classList.add('show');
-    
+
                 setTimeout(() => {
                     prizeDisplay.classList.remove('show');
                     updateBalance(prize);
