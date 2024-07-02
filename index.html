@@ -257,15 +257,15 @@
         <div id="tasks-page" class="page">
             <h1>Tasks</h1>
             <p>Complete the tasks below to earn more tickets and coins.</p>
-            <div class="task-info">
+            <div class="task-info" id="task1">
                 <p>Subscribe to <a href="https://t.me/fixicoin" target="_blank">Fixicoin Telegram</a></p>
                 <p>🎫 1 &nbsp; <span class="balance-icon">F</span> 300 coins</p>
-                <button class="btn btn-primary mt-3 btn-confirm" onclick="confirmTask(this)">Confirm</button>
+                <button class="btn btn-primary mt-3 btn-confirm" onclick="confirmTask(1)">Confirm</button>
             </div>
-            <div class="task-info">
+            <div class="task-info" id="task2">
                 <p>Invite 5 friends</p>
                 <p>🎫 5 &nbsp; <span class="balance-icon">F</span> 1000 coins</p>
-                <button class="btn btn-primary mt-3 btn-confirm" onclick="inviteFriends()">Confirm</button>
+                <button class="btn btn-primary mt-3 btn-confirm" onclick="confirmTask(2)">Confirm</button>
             </div>
         </div>
 
@@ -275,10 +275,8 @@
             <div class="input-group">
                 <input type="text" id="referral-link-display" class="form-control" readonly>
                 <div class="input-group-append">
-                    <button class="btn btn-primary" onclick="copyReferralLink()">
-                        Copy</button>
-                    <button class="btn btn-primary" onclick="sendReferralLink()">
-                        Send</button>
+                    <button class="btn btn-primary" onclick="copyReferralLink()">Copy</button>
+                    <button class="btn btn-primary" onclick="sendReferralLink()">Send</button>
                 </div>
             </div>
             <div class="referral-progress">
@@ -340,13 +338,27 @@
             });
         }
 
-        function confirmTask(button) {
-            button.disabled = true;
-            button.innerText = 'Confirmed!';
+        function confirmTask(taskId) {
+            const taskElement = document.getElementById(`task${taskId}`);
+            const btnConfirm = taskElement.querySelector('.btn-confirm');
+            btnConfirm.disabled = true;
+            btnConfirm.innerText = 'Confirmed!';
             setTimeout(() => {
-                alert("Task confirmed! You earned 300 coins and 1 ticket.");
-                userTickets++;
-                updateBalance(300);
+                let coinsEarned = 0;
+                let ticketsEarned = 0;
+
+                if (taskId === 1) {
+                    coinsEarned = 300;
+                    ticketsEarned = 1;
+                } else if (taskId === 2) {
+                    coinsEarned = 1000;
+                    ticketsEarned = 5;
+                }
+
+                alert(`Task ${taskId} confirmed! You earned ${coinsEarned} coins and ${ticketsEarned} ticket(s).`);
+
+                userTickets += ticketsEarned;
+                updateBalance(coinsEarned);
                 updateTicketsDisplay(userTickets);
             }, 3000);
         }
