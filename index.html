@@ -221,6 +221,11 @@
             margin: 0.5em 0;
         }
 
+        #tasks-page {
+            height: 100vh;
+            overflow-y: auto; /* Разрешаем вертикальную прокрутку */
+            padding: 20px; /* Добавляем отступы для улучшения внешнего вида */
+        }
     </style>
 </head>
 <body>
@@ -321,6 +326,16 @@
             if (savedBalance) {
                 document.getElementById('balance').innerText = savedBalance;
             }
+
+            // Проверка и загрузка сохраненных данных при загрузке страницы
+            const savedTasks = JSON.parse(localStorage.getItem('tasks')) || {};
+            document.querySelectorAll('.btn-confirm').forEach(button => {
+                const taskId = button.closest('.task-info').id.replace('task', '');
+                if (savedTasks[taskId]) {
+                    button.disabled = true;
+                    button.innerText = 'Confirmed!';
+                }
+            });
         });
 
         document.getElementById('main-link').addEventListener('click', () => showPage('main-page'));
@@ -341,6 +356,14 @@
         function confirmTask(taskId) {
             const taskElement = document.getElementById(`task${taskId}`);
             const btnConfirm = taskElement.querySelector('.btn-confirm');
+
+            // Проверяем, было ли задание уже выполнено
+            const savedTasks = JSON.parse(localStorage.getItem('tasks')) || {};
+            if (savedTasks[taskId]) {
+                alert("This task has already been completed.");
+                return;
+            }
+
             btnConfirm.disabled = true;
             btnConfirm.innerText = 'Confirmed!';
             setTimeout(() => {
@@ -360,11 +383,16 @@
                 userTickets += ticketsEarned;
                 updateBalance(coinsEarned);
                 updateTicketsDisplay(userTickets);
+
+                // Сохраняем статус выполнения задания
+                savedTasks[taskId] = true;
+                localStorage.setItem('tasks', JSON.stringify(savedTasks));
             }, 3000);
         }
 
         function inviteFriends() {
-            const friendsInvited = 5; // Assume 5 friends are invited
+            // Имитация реального количества приглашенных друзей
+            const friendsInvited = 5; // Пример количества приглашенных друзей
             if (referralProgress + friendsInvited <= 5) {
                 referralProgress += friendsInvited;
                 localStorage.setItem('referralProgress', referralProgress);
