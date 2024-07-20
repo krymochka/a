@@ -50,19 +50,16 @@
         }
 
         .task-info {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-top: 20px;
-            padding: 10px;
-            border: 1px solid #6c757d;
+            border: 2px solid #6c757d;
             border-radius: 5px;
-            background-color: rgba(0, 0, 0, 0.1);
+            padding: 10px;
+            margin-top: 20px;
+            max-width: 600px; /* Пример ширины задания */
         }
 
         .task-info p {
             margin: 0;
-            font-size: 1em;
+            font-size: 1.2em;
         }
 
         .navbar {
@@ -124,11 +121,11 @@
         }
 
         .profile-info img {
-        border-radius: 50%;
-        width: 50px;
-        height: 50px;
-        object-fit: cover; /* Это обеспечит правильное отображение фото */
-    }
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            object-fit: cover;
+        }
 
         .profile-info .username {
             flex-grow: 1;
@@ -172,23 +169,23 @@
         }
 
         .ticket-balance {
-        position: absolute;
-        bottom: 10px;
-        left: 10px;
-        font-size: 1em;
-        background-color: #333;
-        color: #fff;
-        padding: 5px 10px;
-        border-radius: 5px;
-        margin-bottom: 0;
-    }
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            font-size: 1em;
+            background-color: #333;
+            color: #fff;
+            padding: 5px 10px;
+            border-radius: 5px;
+            margin-bottom: 0;
+        }
 
-    .get-more-button {
-        position: absolute;
-        bottom: 10px;
-        right: 10px;
-        margin-top: 0;
-    }
+        .get-more-button {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            margin-top: 0;
+        }
 
         .button {
             background-color: #4CAF50;
@@ -213,6 +210,17 @@
             font-weight: bold;
             color: #555;
         }
+
+        .referral-progress {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .referral-progress p {
+            font-size: 1.2em;
+            margin: 0.5em 0;
+        }
+
     </style>
 </head>
 <body>
@@ -249,15 +257,15 @@
         <div id="tasks-page" class="page">
             <h1>Tasks</h1>
             <p>Complete the tasks below to earn more tickets and coins.</p>
-            <div class="task-info">
+            <div class="task-info" id="task1">
                 <p>Subscribe to <a href="https://t.me/fixicoin" target="_blank">Fixicoin Telegram</a></p>
                 <p>🎫 1 &nbsp; <span class="balance-icon">F</span> 300 coins</p>
-                <button class="btn btn-primary" onclick="confirmTask(this)">Confirm</button>
+                <button class="btn btn-primary mt-3 btn-confirm" onclick="confirmTask(1)">Confirm</button>
             </div>
-            <div class="task-info">
+            <div class="task-info" id="task2">
                 <p>Invite 5 friends</p>
-                <p>🎫 2 &nbsp; <span class="balance-icon">F</span> 500 coins</p>
-                <button class="btn btn-primary" onclick="confirmTask(this)">Confirm</button>
+                <p>🎫 5 &nbsp; <span class="balance-icon">F</span> 1000 coins</p>
+                <button class="btn btn-primary mt-3 btn-confirm" onclick="confirmTask(2)">Confirm</button>
             </div>
         </div>
 
@@ -271,6 +279,9 @@
                     <button class="btn btn-primary" onclick="sendReferralLink()">Send</button>
                 </div>
             </div>
+            <div class="referral-progress">
+                <p>Referral Progress: <span id="referral-progress">0</span>/5</p>
+            </div>
         </div>
 
         <div class="navbar fixed-bottom bg-dark d-flex justify-content-around">
@@ -279,9 +290,8 @@
             <button class="nav-button" id="referral-link"><i class="fas fa-user-friends"></i></button>
         </div>
 
+        <div id="prize-display" class="prize"></div>
     </div>
-
-    <div id="prize-display" class="prize"></div>
 
     <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
     <script src="scripts.js"></script>
@@ -302,7 +312,9 @@
         }
 
         let userTickets = localStorage.getItem('tickets') ? parseInt(localStorage.getItem('tickets')) : 3;
+        let referralProgress = localStorage.getItem('referralProgress') ? parseInt(localStorage.getItem('referralProgress')) : 0;
         updateTicketsDisplay(userTickets);
+        updateReferralProgress(referralProgress);
 
         document.addEventListener('DOMContentLoaded', (event) => {
             const savedBalance = localStorage.getItem('balance');
@@ -326,19 +338,62 @@
             });
         }
 
-        function confirmTask(button) {
-            button.disabled = true;
-            button.innerText = 'Confirmed!';
+        function confirmTask(taskId) {
+            const taskElement = document.getElementById(`task${taskId}`);
+            const btnConfirm = taskElement.querySelector('.btn-confirm');
+            btnConfirm.disabled = true;
+            btnConfirm.innerText = 'Confirmed!';
             setTimeout(() => {
-                alert("Task confirmed! You earned coins and tickets.");
-                // Update user tickets and balance logic
-                // ...
+                let coinsEarned = 0;
+                let ticketsEarned = 0;
+
+                if (taskId === 1) {
+                    coinsEarned = 300;
+                    ticketsEarned = 1;
+                } else if (taskId === 2) {
+                    coinsEarned = 1000;
+                    ticketsEarned = 5;
+                }
+
+                alert(`Task ${taskId} confirmed! You earned ${coinsEarned} coins and ${ticketsEarned} ticket(s).`);
+
+                userTickets += ticketsEarned;
+                updateBalance(coinsEarned);
+                updateTicketsDisplay(userTickets);
             }, 3000);
         }
 
-        function generateReferralLink() {
-            const referralLink = `https://t.me/FixiCoin_Bot/referral?user_id=${userId}`;
-            document.getElementById('referral-link-display').value = referralLink;
+        function inviteFriends() {
+            const friendsInvited = 5; // Assume 5 friends are invited
+            if (referralProgress + friendsInvited <= 5) {
+                referralProgress += friendsInvited;
+                localStorage.setItem('referralProgress', referralProgress);
+                alert(`You have invited ${friendsInvited} friends! You earned 5 tickets and 1000 coins.`);
+                userTickets += 5;
+                updateBalance(1000);
+                updateTicketsDisplay(userTickets);
+                updateReferralProgress(referralProgress);
+            } else {
+                alert("You have already completed this task!");
+            }
+        }
+
+        function updateBalance(amount) {
+            const balanceElement = document.getElementById('balance');
+            let currentBalance = parseInt(balanceElement.innerText);
+            balanceElement.innerText = currentBalance + amount;
+            localStorage.setItem('balance', balanceElement.innerText);
+        }
+
+        function updateTicketsDisplay(tickets) {
+            const ticketsElement = document.getElementById('tickets');
+            ticketsElement.innerText = tickets;
+            localStorage.setItem('tickets', tickets);
+        }
+
+        function updateReferralProgress(progress) {
+            const progressElement = document.getElementById('referral-progress');
+            progressElement.innerText = progress;
         }
 
         function copyReferralLink() {
@@ -350,7 +405,7 @@
         }
 
         function sendReferralLink() {
-            const referralLink = document.getElementById('referral-link-display').value;
+            const referralLink = "https://t.me/FixiCoin_Bot";
             const telegramUrl = `https://t.me/share/url?url=${encodeURIComponent(referralLink)}`;
             window.open(telegramUrl, '_blank');
         }
@@ -388,19 +443,6 @@
             } else {
                 alert('You need more tickets to play the game!');
             }
-        }
-
-        function updateBalance(amount) {
-            const balanceElement = document.getElementById('balance');
-            let currentBalance = parseInt(balanceElement.innerText);
-            balanceElement.innerText = currentBalance + amount;
-            localStorage.setItem('balance', balanceElement.innerText);
-        }
-
-        function updateTicketsDisplay(tickets) {
-            const ticketsElement = document.getElementById('tickets');
-            ticketsElement.innerText = tickets;
-            localStorage.setItem('tickets', tickets);
         }
 
         function showPrize(prize) {
