@@ -67,7 +67,7 @@
         }
 
         .btn-confirm {
-            display: inline-block;
+            display: none;
         }
 
         .page {
@@ -227,26 +227,8 @@
             padding: 10px;
         }
 
-        #referral-list {
+        .referral-list {
             margin-top: 20px;
-        }
-
-        #referral-list h2 {
-            font-size: 1.5em;
-            margin-bottom: 10px;
-        }
-
-        #referral-list ul {
-            list-style-type: none;
-            padding: 0;
-        }
-
-        #referral-list li {
-            background-color: #f8f9fa;
-            border: 1px solid #6c757d;
-            border-radius: 5px;
-            padding: 10px;
-            margin: 5px 0;
         }
     </style>
 </head>
@@ -309,11 +291,9 @@
             <div class="referral-progress">
                 <p>Referral Progress: <span id="referral-progress">0</span>/5</p>
             </div>
-            <div id="referral-list">
-                <h2>Referral List</h2>
-                <ul id="referral-list-items">
-                    <!-- Referral list will be updated here -->
-                </ul>
+            <div class="referral-list">
+                <h2>Your Referrals</h2>
+                <ul id="referral-list"></ul>
             </div>
         </div>
 
@@ -333,35 +313,41 @@
             console.log('particles.js loaded - callback');
         });
 
-        const urlParams = new URLSearchParams(window.location.search);
-        const username = urlParams.get('username');
-        const photoUrl = urlParams.get('photo_url');
-
-        if (username) {
-            document.getElementById('user-name').textContent = username;
-        }
-        if (photoUrl) {
-            document.getElementById('user-avatar').src = photoUrl;
+        function generateUniqueId() {
+            return 'ref-' + Math.random().toString(36).substr(2, 9);
         }
 
-        let userTickets = localStorage.getItem('tickets') ? parseInt(localStorage.getItem('tickets')) : 3;
-        let referralProgress = localStorage.getItem('referralProgress') ? parseInt(localStorage.getItem('referralProgress')) : 0;
-        let taskCompleted = localStorage.getItem('taskCompleted') ? JSON.parse(localStorage.getItem('taskCompleted')) : {1: false, 2: false};
-        let referralList = JSON.parse(localStorage.getItem('referralList')) || [];
-        updateTicketsDisplay(userTickets);
-        updateReferralProgress(referralProgress);
-        updateReferralList();
-
-        document.addEventListener('DOMContentLoaded', (event) => {
-            const savedBalance = localStorage.getItem('balance');
-            if (savedBalance) {
-                document.getElementById('balance').innerText = savedBalance;
+        document.addEventListener('DOMContentLoaded', () => {
+            // При регистрации или входе пользователя
+            let userId = localStorage.getItem('userId');
+            if (!userId) {
+                userId = generateUniqueId();
+                localStorage.setItem('userId', userId);
             }
-        });
 
-        document.getElementById('main-link').addEventListener('click', () => showPage('main-page'));
-        document.getElementById('tasks-link').addEventListener('click', () => showPage('tasks-page'));
-        document.getElementById('referral-link').addEventListener('click', () => showPage('referral-page'));
+            const referralLink = `https://t.me/FixiCoin_Bot?ref=${userId}`;
+            document.getElementById('referral-link-display').value = referralLink;
+
+            let userTickets = localStorage.getItem('tickets') ? parseInt(localStorage.getItem('tickets')) : 3;
+            let referralProgress = localStorage.getItem('referralProgress') ? parseInt(localStorage.getItem('referralProgress')) : 0;
+            let taskCompleted = localStorage.getItem('taskCompleted') ? JSON.parse(localStorage.getItem('taskCompleted')) : {1: false, 2: false};
+            updateTicketsDisplay(userTickets);
+            updateReferralProgress(referralProgress);
+
+            document.addEventListener('DOMContentLoaded', (event) => {
+                const savedBalance = localStorage.getItem('balance');
+                if (savedBalance) {
+                    document.getElementById('balance').innerText = savedBalance;
+                }
+            });
+
+            document.getElementById('main-link').addEventListener('click', () => showPage('main-page'));
+            document.getElementById('tasks-link').addEventListener('click', () => showPage('tasks-page'));
+            document.getElementById('referral-link').addEventListener('click', () => showPage('referral-page'));
+
+            // Обновление списка рефералов
+            updateReferralList();
+        });
 
         function showPage(pageId) {
             const pages = document.querySelectorAll('.page');
@@ -424,9 +410,13 @@
                 updateTicketsDisplay(userTickets);
                 updateReferralProgress(referralProgress);
 
-                // Обновление списка рефералов
-                referralList.push({ id: referralList.length + 1, name: `Friend ${referralList.length + 1}` });
-                localStorage.setItem('referralList', JSON.stringify(referralList));
+                // Добавляем информацию о новых рефералах
+                const userId = localStorage.getItem('userId');
+                const referrals = JSON.parse(localStorage.getItem('referrals')) || [];
+                referrals.push(userId);
+                localStorage.setItem('referrals', JSON.stringify(referrals));
+
+                // Обновляем список рефералов
                 updateReferralList();
             } else {
                 alert("You have already completed this task!");
@@ -452,13 +442,14 @@
         }
 
         function updateReferralList() {
-            const listElement = document.getElementById('referral-list-items');
-            listElement.innerHTML = '';
+            const referralListElement = document.getElementById('referral-list');
+            const referrals = JSON.parse(localStorage.getItem('referrals')) || [];
+            referralListElement.innerHTML = '';
 
-            referralList.forEach(referral => {
+            referrals.forEach(referral => {
                 const listItem = document.createElement('li');
-                listItem.innerText = referral.name;
-                listElement.appendChild(listItem);
+                listItem.textContent = `Referral: https://t.me/FixiCoin_Bot?ref=${referral}`;
+                referralListElement.appendChild(listItem);
             });
         }
 
@@ -471,7 +462,7 @@
         }
 
         function sendReferralLink() {
-            const referralLink = "https://t.me/FixiCoin_Bot";
+            const referralLink = document.getElementById('referral-link-display').value;
             const telegramUrl = `https://t.me/share/url?url=${encodeURIComponent(referralLink)}`;
             window.open(telegramUrl, '_blank');
         }
