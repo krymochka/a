@@ -67,7 +67,7 @@
         }
 
         .btn-confirm {
-            display: none;
+            display: inline-block;
         }
 
         .page {
@@ -280,10 +280,10 @@
             <div class="input-group">
                 <input type="text" id="referral-link-display" class="form-control" readonly>
                 <div class="input-group-append">
-                    <button class="btn btn-primary" onclick="copyReferralLink()">Copy</button>
+                    <button class="btn btn-primary" onclick="copyReferralLink()">Copy Link</button>
+                    <button class="btn btn-primary" onclick="sendReferralLink()">Send</button>
                 </div>
             </div>
-            <button class="btn btn-primary mt-3" onclick="sendReferralLink()">Send</button>
             <div class="referral-progress">
                 <p>Referral Progress: <span id="referral-progress">0</span>/5</p>
             </div>
