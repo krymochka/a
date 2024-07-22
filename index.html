@@ -376,7 +376,7 @@
     let referralProgress = localStorage.getItem('referralProgress') ? parseInt(localStorage.getItem('referralProgress')) : 0;
 
     if (taskCompleted[taskId]) {
-        alert('This task is already completed!');
+        showNotification('This task is already completed!');
         return;
     }
 
@@ -394,7 +394,7 @@
             ticketsEarned = 1;
         } else if (taskId === 2) {
             if (referralProgress < 5) {
-                alert('You need to invite 5 friends to complete this task!');
+                showNotification('You need to invite 5 friends to complete this task!');
                 btnConfirm.disabled = false;
                 btnConfirm.innerText = 'Confirm';
                 return;
@@ -403,7 +403,7 @@
             ticketsEarned = 5;
         }
 
-        alert(`Task ${taskId} confirmed! You earned ${coinsEarned} coins and ${ticketsEarned} ticket(s).`);
+        showNotification(`Task ${taskId} confirmed! You earned ${coinsEarned} coins and ${ticketsEarned} ticket(s).`);
 
         userTickets += ticketsEarned;
         updateBalance(coinsEarned);
@@ -412,6 +412,11 @@
         taskCompleted[taskId] = true;
         localStorage.setItem('taskCompleted', JSON.stringify(taskCompleted));
     }, 3000);
+}
+
+function showNotification(message) {
+    // Уведомление без ссылок на сайт
+    alert(message);
 }
 
         function updateBalance(amount) {
