@@ -318,7 +318,6 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            // При регистрации или входе пользователя
             let userId = localStorage.getItem('userId');
             if (!userId) {
                 userId = generateUniqueId();
@@ -357,7 +356,6 @@
             document.getElementById('tasks-link').addEventListener('click', () => showPage('tasks-page'));
             document.getElementById('referral-link').addEventListener('click', () => showPage('referral-page'));
 
-            // Обновление списка рефералов
             updateReferralList();
         });
 
@@ -461,8 +459,8 @@
         }
 
         function startLuckyGame() {
-            let userTickets = localStorage.getItem('tickets') ? parseInt(localStorage.getItem('tickets')) : 3;
-            if (userTickets >= 1) {
+            if (parseInt(document.getElementById('tickets').innerText) >= 1) {
+                let userTickets = parseInt(document.getElementById('tickets').innerText);
                 userTickets--;
                 updateTicketsDisplay(userTickets);
 
