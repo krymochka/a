@@ -318,200 +318,190 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            // При регистрации или входе пользователя
-            let userId = localStorage.getItem('userId');
-            if (!userId) {
-                userId = generateUniqueId();
-                localStorage.setItem('userId', userId);
-            }
+    // При регистрации или входе пользователя
+    let userId = localStorage.getItem('userId');
+    if (!userId) {
+        userId = generateUniqueId();
+        localStorage.setItem('userId', userId);
+    }
 
-            const referralLink = `https://t.me/FixiCoin_Bot?ref=${userId}`;
-            document.getElementById('referral-link-display').value = referralLink;
+    const referralLink = `https://t.me/FixiCoin_Bot?ref=${userId}`;
+    document.getElementById('referral-link-display').value = referralLink;
 
-            let userTickets = localStorage.getItem('tickets') ? parseInt(localStorage.getItem('tickets')) : 3;
-            let referralProgress = localStorage.getItem('referralProgress') ? parseInt(localStorage.getItem('referralProgress')) : 0;
-            let taskCompleted = localStorage.getItem('taskCompleted') ? JSON.parse(localStorage.getItem('taskCompleted')) : {1: false, 2: false};
-            updateTicketsDisplay(userTickets);
-            updateReferralProgress(referralProgress);
+    let userTickets = localStorage.getItem('tickets') ? parseInt(localStorage.getItem('tickets')) : 3;
+    let referralProgress = localStorage.getItem('referralProgress') ? parseInt(localStorage.getItem('referralProgress')) : 0;
+    let taskCompleted = localStorage.getItem('taskCompleted') ? JSON.parse(localStorage.getItem('taskCompleted')) : {1: false, 2: false};
 
-            document.addEventListener('DOMContentLoaded', (event) => {
-                const savedBalance = localStorage.getItem('balance');
-                if (savedBalance) {
-                    document.getElementById('balance').innerText = savedBalance;
-                }
-            });
+    updateTicketsDisplay(userTickets);
+    updateReferralProgress(referralProgress);
 
-            document.getElementById('main-link').addEventListener('click', () => showPage('main-page'));
-            document.getElementById('tasks-link').addEventListener('click', () => showPage('tasks-page'));
-            document.getElementById('referral-link').addEventListener('click', () => showPage('referral-page'));
+    const savedBalance = localStorage.getItem('balance');
+    if (savedBalance) {
+        document.getElementById('balance').innerText = savedBalance;
+    }
 
-            // Обновление списка рефералов
-            updateReferralList();
-        });
+    const userAvatar = localStorage.getItem('userAvatar');
+    if (userAvatar) {
+        document.getElementById('user-avatar').src = userAvatar;
+    }
 
-        function showPage(pageId) {
-            const pages = document.querySelectorAll('.page');
-            pages.forEach(page => {
-                if (page.id === pageId) {
-                    page.classList.add('active');
-                } else {
-                    page.classList.remove('active');
-                }
-            });
+    const userName = localStorage.getItem('userName');
+    if (userName) {
+        document.getElementById('user-name').innerText = userName;
+    }
+
+    document.getElementById('main-link').addEventListener('click', () => showPage('main-page'));
+    document.getElementById('tasks-link').addEventListener('click', () => showPage('tasks-page'));
+    document.getElementById('referral-link').addEventListener('click', () => showPage('referral-page'));
+
+    // Обновление списка рефералов
+    updateReferralList();
+});
+
+function showPage(pageId) {
+    const pages = document.querySelectorAll('.page');
+    pages.forEach(page => {
+        if (page.id === pageId) {
+            page.classList.add('active');
+        } else {
+            page.classList.remove('active');
         }
+    });
+}
 
-        function confirmTask(taskId) {
-            if (taskCompleted[taskId]) {
-                alert('This task is already completed!');
+function confirmTask(taskId) {
+    let taskCompleted = localStorage.getItem('taskCompleted') ? JSON.parse(localStorage.getItem('taskCompleted')) : {1: false, 2: false};
+    let userTickets = localStorage.getItem('tickets') ? parseInt(localStorage.getItem('tickets')) : 3;
+    let referralProgress = localStorage.getItem('referralProgress') ? parseInt(localStorage.getItem('referralProgress')) : 0;
+
+    if (taskCompleted[taskId]) {
+        alert('This task is already completed!');
+        return;
+    }
+
+    const taskElement = document.getElementById(`task${taskId}`);
+    const btnConfirm = taskElement.querySelector('.btn-confirm');
+    btnConfirm.disabled = true;
+    btnConfirm.innerText = 'Confirmed!';
+    
+    setTimeout(() => {
+        let coinsEarned = 0;
+        let ticketsEarned = 0;
+
+        if (taskId === 1) {
+            coinsEarned = 300;
+            ticketsEarned = 1;
+        } else if (taskId === 2) {
+            if (referralProgress < 5) {
+                alert('You need to invite 5 friends to complete this task!');
+                btnConfirm.disabled = false;
+                btnConfirm.innerText = 'Confirm';
                 return;
             }
-
-            const taskElement = document.getElementById(`task${taskId}`);
-            const btnConfirm = taskElement.querySelector('.btn-confirm');
-            btnConfirm.disabled = true;
-            btnConfirm.innerText = 'Confirmed!';
-            setTimeout(() => {
-                let coinsEarned = 0;
-                let ticketsEarned = 0;
-
-                if (taskId === 1) {
-                    coinsEarned = 300;
-                    ticketsEarned = 1;
-                } else if (taskId === 2) {
-                    if (referralProgress < 5) {
-                        alert('You need to invite 5 friends to complete this task!');
-                        btnConfirm.disabled = false;
-                        btnConfirm.innerText = 'Confirm';
-                        return;
-                    }
-                    coinsEarned = 1000;
-                    ticketsEarned = 5;
-                }
-
-                alert(`Task ${taskId} confirmed! You earned ${coinsEarned} coins and ${ticketsEarned} ticket(s).`);
-
-                userTickets += ticketsEarned;
-                updateBalance(coinsEarned);
-                updateTicketsDisplay(userTickets);
-
-                taskCompleted[taskId] = true;
-                localStorage.setItem('taskCompleted', JSON.stringify(taskCompleted));
-            }, 3000);
+            coinsEarned = 1000;
+            ticketsEarned = 5;
         }
 
-        function inviteFriends() {
-            const friendsInvited = 5; // Assume 5 friends are invited
-            if (referralProgress + friendsInvited <= 5) {
-                referralProgress += friendsInvited;
-                localStorage.setItem('referralProgress', referralProgress);
-                alert(`You have invited ${friendsInvited} friends! You earned 5 tickets and 1000 coins.`);
-                userTickets += 5;
-                updateBalance(1000);
-                updateTicketsDisplay(userTickets);
-                updateReferralProgress(referralProgress);
+        alert(`Task ${taskId} confirmed! You earned ${coinsEarned} coins and ${ticketsEarned} ticket(s).`);
 
-                // Добавляем информацию о новых рефералах
-                const userId = localStorage.getItem('userId');
-                const referrals = JSON.parse(localStorage.getItem('referrals')) || [];
-                referrals.push(userId);
-                localStorage.setItem('referrals', JSON.stringify(referrals));
+        userTickets += ticketsEarned;
+        updateBalance(coinsEarned);
+        updateTicketsDisplay(userTickets);
 
-                // Обновляем список рефералов
-                updateReferralList();
-            } else {
-                alert("You have already completed this task!");
-            }
-        }
+        taskCompleted[taskId] = true;
+        localStorage.setItem('taskCompleted', JSON.stringify(taskCompleted));
+    }, 3000);
+}
 
-        function updateBalance(amount) {
-            const balanceElement = document.getElementById('balance');
-            let currentBalance = parseInt(balanceElement.innerText);
-            balanceElement.innerText = currentBalance + amount;
-            localStorage.setItem('balance', balanceElement.innerText);
-        }
+function updateBalance(amount) {
+    const balanceElement = document.getElementById('balance');
+    let currentBalance = parseInt(balanceElement.innerText);
+    balanceElement.innerText = currentBalance + amount;
+    localStorage.setItem('balance', balanceElement.innerText);
+}
 
-        function updateTicketsDisplay(tickets) {
-            const ticketsElement = document.getElementById('tickets');
-            ticketsElement.innerText = tickets;
-            localStorage.setItem('tickets', tickets);
-        }
+function updateTicketsDisplay(tickets) {
+    const ticketsElement = document.getElementById('tickets');
+    ticketsElement.innerText = tickets;
+    localStorage.setItem('tickets', tickets);
+}
 
-        function updateReferralProgress(progress) {
-            const progressElement = document.getElementById('referral-progress');
-            progressElement.innerText = progress;
-        }
+function updateReferralProgress(progress) {
+    const progressElement = document.getElementById('referral-progress');
+    progressElement.innerText = progress;
+}
 
-        function updateReferralList() {
-            const referralListElement = document.getElementById('referral-list');
-            const referrals = JSON.parse(localStorage.getItem('referrals')) || [];
-            referralListElement.innerHTML = '';
+function updateReferralList() {
+    const referralListElement = document.getElementById('referral-list');
+    const referrals = JSON.parse(localStorage.getItem('referrals')) || [];
+    referralListElement.innerHTML = '';
 
-            referrals.forEach(referral => {
-                const listItem = document.createElement('li');
-                listItem.textContent = `Referral: https://t.me/FixiCoin_Bot?ref=${referral}`;
-                referralListElement.appendChild(listItem);
-            });
-        }
+    referrals.forEach(referral => {
+        const listItem = document.createElement('li');
+        listItem.textContent = `Referral: https://t.me/FixiCoin_Bot?ref=${referral}`;
+        referralListElement.appendChild(listItem);
+    });
+}
 
-        function copyReferralLink() {
-            const referralLink = document.getElementById('referral-link-display');
-            referralLink.select();
-            referralLink.setSelectionRange(0, 99999);
-            document.execCommand('copy');
-            alert("Referral link copied to clipboard!");
-        }
+function copyReferralLink() {
+    const referralLink = document.getElementById('referral-link-display');
+    referralLink.select();
+    referralLink.setSelectionRange(0, 99999);
+    document.execCommand('copy');
+    alert("Referral link copied to clipboard!");
+}
 
-        function sendReferralLink() {
-            const referralLink = document.getElementById('referral-link-display').value;
-            const telegramUrl = `https://t.me/share/url?url=${encodeURIComponent(referralLink)}`;
-            window.open(telegramUrl, '_blank');
-        }
+function sendReferralLink() {
+    const referralLink = document.getElementById('referral-link-display').value;
+    const telegramUrl = `https://t.me/share/url?url=${encodeURIComponent(referralLink)}`;
+    window.open(telegramUrl, '_blank');
+}
 
-        function startLuckyGame() {
-            if (userTickets >= 1) {
-                userTickets--;
-                updateTicketsDisplay(userTickets);
+function startLuckyGame() {
+    if (userTickets >= 1) {
+        userTickets--;
+        updateTicketsDisplay(userTickets);
 
-                const ticketValues = [20, 20, 50, 50, 50, 50, 100, 100, 100, 300, 500, 1000];
-                const shuffledValues = ticketValues.sort(() => Math.random() - 0.5);
-                const ticketsContainer = document.getElementById('tickets-container');
+        const ticketValues = [20, 20, 50, 50, 50, 50, 100, 100, 100, 300, 500, 1000];
+        const shuffledValues = ticketValues.sort(() => Math.random() - 0.5);
+        const ticketsContainer = document.getElementById('tickets-container');
 
-                ticketsContainer.innerHTML = '';
+        ticketsContainer.innerHTML = '';
 
-                shuffledValues.forEach(value => {
-                    const ticket = document.createElement('div');
-                    ticket.classList.add('ticket');
-                    ticket.innerHTML = '🎫';
-                    ticket.onclick = function() {
-                        if (!ticket.classList.contains('revealed') && !ticket.classList.contains('disabled')) {
-                            ticket.classList.add('revealed');
-                            showPrize(value);
+        shuffledValues.forEach(value => {
+            const ticket = document.createElement('div');
+            ticket.classList.add('ticket');
+            ticket.innerHTML = '🎫';
+            ticket.onclick = function() {
+                if (!ticket.classList.contains('revealed') && !ticket.classList.contains('disabled')) {
+                    ticket.classList.add('revealed');
+                    showPrize(value);
 
-                            const allTickets = document.querySelectorAll('.ticket');
-                            allTickets.forEach(t => {
-                                if (!t.classList.contains('revealed')) {
-                                    t.classList.add('disabled');
-                                }
-                            });
+                    const allTickets = document.querySelectorAll('.ticket');
+                    allTickets.forEach(t => {
+                        if (!t.classList.contains('revealed')) {
+                            t.classList.add('disabled');
                         }
-                    };
-                    ticketsContainer.appendChild(ticket);
-                });
-            } else {
-                alert('You need more tickets to play the game!');
-            }
-        }
+                    });
+                }
+            };
+            ticketsContainer.appendChild(ticket);
+        });
+    } else {
+        alert('You need more tickets to play the game!');
+    }
+}
 
-        function showPrize(prize) {
-            const prizeDisplay = document.getElementById('prize-display');
-            prizeDisplay.innerText = prize;
-            prizeDisplay.classList.add('show');
+function showPrize(prize) {
+    const prizeDisplay = document.getElementById('prize-display');
+    prizeDisplay.innerText = prize;
+    prizeDisplay.classList.add('show');
 
-            setTimeout(() => {
-                prizeDisplay.classList.remove('show');
-                updateBalance(prize);
-            }, 2000);
-        }
+    setTimeout(() => {
+        prizeDisplay.classList.remove('show');
+        updateBalance(prize);
+    }, 2000);
+}
     </script>
 </body>
 </html>
