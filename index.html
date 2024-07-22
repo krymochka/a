@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Game App</title>
+    <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&display=swap">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
@@ -13,10 +14,12 @@
             background-color: #f8f9fa;
             color: #343a40;
         }
+
         h1 {
             font-weight: 700;
             color: #6c757d;
         }
+
         .game-box {
             border: 2px solid #6c757d;
             border-radius: 10px;
@@ -30,18 +33,22 @@
             align-items: center;
             position: relative;
         }
+
         .info-box {
             text-align: center;
         }
+
         .info-box p {
             font-size: 1.2em;
             margin: 0.5em 0;
         }
+
         .balance-icon {
             font-weight: 900;
             font-size: 1.5em;
             color: #6c757d;
         }
+
         .task-info {
             border: 2px solid #6c757d;
             border-radius: 5px;
@@ -49,22 +56,28 @@
             margin-top: 20px;
             max-width: 600px;
         }
+
         .task-info p {
             margin: 0;
             font-size: 1.2em;
         }
+
         .navbar {
             padding: 10px;
         }
+
         .btn-confirm {
             display: inline-block;
         }
+
         .page {
             display: none;
         }
+
         .page.active {
             display: block;
         }
+
         .ticket {
             cursor: pointer;
             font-size: 1.5em;
@@ -75,9 +88,11 @@
             background-color: rgba(0, 0, 0, 0.2);
             transition: transform 0.3s;
         }
+
         .ticket.revealed {
             transform: scale(1.2);
         }
+
         .prize {
             position: absolute;
             top: 50%;
@@ -88,10 +103,12 @@
             opacity: 0;
             transition: opacity 0.5s, transform 0.5s;
         }
+
         .prize.show {
             opacity: 1;
             transform: translate(-50%, -50%) scale(1.5);
         }
+
         .profile-info {
             display: flex;
             align-items: center;
@@ -102,20 +119,24 @@
             margin-bottom: 20px;
             border-radius: 5px;
         }
+
         .profile-info img {
             border-radius: 50%;
             width: 50px;
             height: 50px;
             object-fit: cover;
         }
+
         .profile-info .username {
             flex-grow: 1;
             margin-left: 10px;
         }
+
         .profile-info .balance {
             font-size: 1.2em;
             margin-left: 10px;
         }
+
         .play-button {
             border-radius: 50%;
             width: 50px;
@@ -129,9 +150,11 @@
             border: none;
             cursor: pointer;
         }
+
         .play-button:hover {
             background-color: #0056b3;
         }
+
         .centered-container {
             display: flex;
             justify-content: center;
@@ -139,10 +162,12 @@
             height: calc(100vh - 70px);
             position: relative;
         }
+
         .game-container {
             width: 100%;
             max-width: 800px;
         }
+
         .ticket-balance {
             position: absolute;
             bottom: 10px;
@@ -154,12 +179,14 @@
             border-radius: 5px;
             margin-bottom: 0;
         }
+
         .get-more-button {
             position: absolute;
             bottom: 10px;
             right: 10px;
             margin-top: 0;
         }
+
         .button {
             background-color: #4CAF50;
             color: white;
@@ -173,6 +200,7 @@
             border: none;
             border-radius: 4px;
         }
+
         .fixi-coin-title {
             position: absolute;
             top: 10%;
@@ -182,19 +210,23 @@
             font-weight: bold;
             color: #555;
         }
+
         .referral-progress {
             margin-top: 20px;
             text-align: center;
         }
+
         .referral-progress p {
             font-size: 1.2em;
             margin: 0.5em 0;
         }
+
         #tasks-page {
             height: 100vh;
             overflow-y: auto;
             padding: 10px;
         }
+
         .referral-list {
             margin-top: 20px;
         }
@@ -275,7 +307,7 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/js/all.min.js"></script>
+    <script src="scripts.js"></script>
     <script>
         particlesJS.load('particles-js', 'particles.json', function() {
             console.log('particles.js loaded - callback');
@@ -286,6 +318,7 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
+            // При регистрации или входе пользователя
             let userId = localStorage.getItem('userId');
             if (!userId) {
                 userId = generateUniqueId();
@@ -301,24 +334,18 @@
             updateTicketsDisplay(userTickets);
             updateReferralProgress(referralProgress);
 
-            const savedBalance = localStorage.getItem('balance');
-            if (savedBalance) {
-                document.getElementById('balance').innerText = savedBalance;
-            }
-
-            const savedAvatar = localStorage.getItem('userAvatar');
-            const savedName = localStorage.getItem('userName');
-            if (savedAvatar) {
-                document.getElementById('user-avatar').src = savedAvatar;
-            }
-            if (savedName) {
-                document.getElementById('user-name').innerText = savedName;
-            }
+            document.addEventListener('DOMContentLoaded', (event) => {
+                const savedBalance = localStorage.getItem('balance');
+                if (savedBalance) {
+                    document.getElementById('balance').innerText = savedBalance;
+                }
+            });
 
             document.getElementById('main-link').addEventListener('click', () => showPage('main-page'));
             document.getElementById('tasks-link').addEventListener('click', () => showPage('tasks-page'));
             document.getElementById('referral-link').addEventListener('click', () => showPage('referral-page'));
 
+            // Обновление списка рефералов
             updateReferralList();
         });
 
@@ -373,7 +400,7 @@
         }
 
         function inviteFriends() {
-            const friendsInvited = 5;
+            const friendsInvited = 5; // Assume 5 friends are invited
             if (referralProgress + friendsInvited <= 5) {
                 referralProgress += friendsInvited;
                 localStorage.setItem('referralProgress', referralProgress);
@@ -383,11 +410,13 @@
                 updateTicketsDisplay(userTickets);
                 updateReferralProgress(referralProgress);
 
+                // Добавляем информацию о новых рефералах
                 const userId = localStorage.getItem('userId');
                 const referrals = JSON.parse(localStorage.getItem('referrals')) || [];
                 referrals.push(userId);
                 localStorage.setItem('referrals', JSON.stringify(referrals));
 
+                // Обновляем список рефералов
                 updateReferralList();
             } else {
                 alert("You have already completed this task!");
