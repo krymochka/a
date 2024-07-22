@@ -340,6 +340,7 @@
         document.getElementById('balance').innerText = savedBalance;
     }
 
+    // Установка аватара и имени пользователя
     const userAvatar = localStorage.getItem('userAvatar');
     if (userAvatar) {
         document.getElementById('user-avatar').src = userAvatar;
@@ -348,6 +349,8 @@
     const userName = localStorage.getItem('userName');
     if (userName) {
         document.getElementById('user-name').innerText = userName;
+    } else {
+        document.getElementById('user-name').innerText = 'yarik.'; // Значение по умолчанию
     }
 
     document.getElementById('main-link').addEventListener('click', () => showPage('main-page'));
