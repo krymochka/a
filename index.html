@@ -252,7 +252,7 @@
         <div id="main-page" class="page active">
             <div class="profile-info">
                 <img id="user-avatar" src="" alt="User Avatar">
-                <span class="username" id="user-name">Loading...</span>
+                <span class="username" id="user-name">yarik.</span>
                 <span class="balance"><span id="balance">450</span>F</span>
             </div>
             <div class="centered-container">
@@ -272,7 +272,8 @@
 
         <div id="lucky-game-page" class="page">
             <h1>Lucky Game</h1>
-            <div id="tickets-container" class="d-flex flex-wrap justify-content-center"></div>
+            <div id="tickets-container" class="d-flex flex-wrap justify-content-center">
+            </div>
             <button class="btn btn-primary mt-3" onclick="startLuckyGame()">Start</button>
         </div>
 
@@ -328,32 +329,45 @@
             console.log('particles.js loaded - callback');
         });
 
-        function getUrlParameter(name) {
-            name = name.replace(/[\[\]]/g, '\\$&');
-            const regex = new RegExp(`[?&]${name}(=([^&#]*)|&|#|$)`),
-                results = regex.exec(window.location.href);
-            if (!results) return null;
-            if (!results[2]) return '';
-            return decodeURIComponent(results[2].replace(/\+/g, ' '));
-        }
-
-        async function fetchProfilePhoto(photoUrl) {
-            const response = await fetch(photoUrl);
-            const blob = await response.blob();
-            return URL.createObjectURL(blob);
+        function generateUniqueId() {
+            return 'ref-' + Math.random().toString(36).substr(2, 9);
         }
 
         document.addEventListener('DOMContentLoaded', async () => {
-            const username = getUrlParameter('username');
-            const photoUrl = getUrlParameter('photo_url');
-
-            if (username) {
-                document.getElementById('user-name').innerText = username;
+            let userId = localStorage.getItem('userId');
+            if (!userId) {
+                userId = generateUniqueId();
+                localStorage.setItem('userId', userId);
             }
 
-            if (photoUrl) {
-                const photo = await fetchProfilePhoto(photoUrl);
-                document.getElementById('user-avatar').src = photo;
+            const referralLink = `https://t.me/FixiCoin_Bot?ref=${userId}`;
+            document.getElementById('referral-link-display').value = referralLink;
+
+            let userTickets = localStorage.getItem('tickets') ? parseInt(localStorage.getItem('tickets')) : 3;
+            let referralProgress = localStorage.getItem('referralProgress') ? parseInt(localStorage.getItem('referralProgress')) : 0;
+            let taskCompleted = localStorage.getItem('taskCompleted') ? JSON.parse(localStorage.getItem('taskCompleted')) : {1: false, 2: false};
+
+            updateTicketsDisplay(userTickets);
+            updateReferralProgress(referralProgress);
+
+            const savedBalance = localStorage.getItem('balance');
+            if (savedBalance) {
+                document.getElementById('balance').innerText = savedBalance;
+            }
+
+            // Получаем данные пользователя
+            try {
+                const response = await fetch(`http://localhost:8000/get_user_data?user_id=${userId}`);
+                const data = await response.json();
+
+                if (data) {
+                    document.getElementById('user-avatar').src = data.photo_url || 'default-avatar-url';
+                    document.getElementById('user-name').innerText = data.first_name || 'yarik.';
+                }
+            } catch (error) {
+                console.error('Error fetching user data:', error);
+                document.getElementById('user-avatar').src = 'default-avatar-url';
+                document.getElementById('user-name').innerText = 'yarik.';
             }
 
             document.getElementById('main-link').addEventListener('click', () => showPage('main-page'));
@@ -375,13 +389,83 @@
         }
 
         function confirmTask(taskId) {
-            let taskCompleted = { taskId };
+            let taskCompleted = localStorage.getItem('taskCompleted') ? JSON.parse(localStorage.getItem('taskCompleted')) : {1: false, 2: false};
+            let userTickets = localStorage.getItem('tickets') ? parseInt(localStorage.getItem('tickets')) : 3;
+            let referralProgress = localStorage.getItem('referralProgress') ? parseInt(localStorage.getItem('referralProgress')) : 0;
+
+            if (taskCompleted[taskId]) {
+                showNotification('This task is already completed!');
+                return;
+            }
+
+            const taskElement = document.getElementById(`task${taskId}`);
+            const btnConfirm = taskElement.querySelector('.btn-confirm');
+            btnConfirm.disabled = true;
+            btnConfirm.innerText = 'Confirmed!';
+
             setTimeout(() => {
-                console.log('Task Completed', JSON.stringify(taskCompleted));
-                const btnConfirm = document.querySelector(`#task${taskId} .btn-confirm`);
-                btnConfirm.disabled = false;
-                btnConfirm.innerText = 'Confirmed!';
+                let coinsEarned = 0;
+                let ticketsEarned = 0;
+
+                if (taskId === 1) {
+                    coinsEarned = 300;
+                    ticketsEarned = 1;
+                } else if (taskId === 2) {
+                    if (referralProgress < 5) {
+                        showNotification('You need to invite 5 friends to complete this task!');
+                        btnConfirm.disabled = false;
+                        btnConfirm.innerText = 'Confirm';
+                        return;
+                    }
+                    coinsEarned = 1000;
+                    ticketsEarned = 5;
+                }
+
+                showNotification(`Task completed! You earned ${ticketsEarned} tickets and ${coinsEarned} coins.`);
+
+                userTickets += ticketsEarned;
+                localStorage.setItem('tickets', userTickets);
+                updateTicketsDisplay(userTickets);
+
+                let balance = parseInt(document.getElementById('balance').innerText);
+                balance += coinsEarned;
+                document.getElementById('balance').innerText = balance;
+                localStorage.setItem('balance', balance);
+
+                taskCompleted[taskId] = true;
+                localStorage.setItem('taskCompleted', JSON.stringify(taskCompleted));
             }, 500);
+        }
+
+        function updateTicketsDisplay(ticketCount) {
+            document.getElementById('tickets').innerText = ticketCount;
+        }
+
+        function updateReferralProgress(progress) {
+            document.getElementById('referral-progress').innerText = progress;
+        }
+
+        function copyReferralLink() {
+            const referralLink = document.getElementById('referral-link-display');
+            referralLink.select();
+            document.execCommand('copy');
+            showNotification('Referral link copied to clipboard!');
+        }
+
+        function sendReferralLink() {
+            const referralLink = document.getElementById('referral-link-display').value;
+            window.open(`https://t.me/share/url?url=${encodeURIComponent(referralLink)}`, '_blank');
+        }
+
+        function updateReferralList() {
+            const referralList = document.getElementById('referral-list');
+            const referrals = JSON.parse(localStorage.getItem('referrals')) || [];
+            referralList.innerHTML = '';
+            referrals.forEach(referral => {
+                const listItem = document.createElement('li');
+                listItem.textContent = referral;
+                referralList.appendChild(listItem);
+            });
         }
 
         function showNotification(message) {
@@ -393,28 +477,13 @@
             }, 3000);
         }
 
-        function updateTicketsDisplay(tickets) {
-            document.getElementById('tickets').innerText = tickets;
-        }
-
-        function copyReferralLink() {
-            const referralLink = document.getElementById('referral-link-display');
-            referralLink.select();
-            document.execCommand('copy');
-            showNotification('Referral link copied to clipboard!');
-        }
-
-        function sendReferralLink() {
-            // Implement the function to send the referral link via desired channels
-            showNotification('Referral link sent!');
-        }
-
-        function updateReferralList() {
-            // Implement the function to fetch and display the referral list
-        }
-
         function startLuckyGame() {
-            // Implement the function to start the lucky game
+            const tickets = parseInt(document.getElementById('tickets').innerText);
+            if (tickets <= 0) {
+                showNotification('You do not have enough tickets to start the game!');
+                return;
+            }
+            // Logic for starting the lucky game
         }
     </script>
 </body>
