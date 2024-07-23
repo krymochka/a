@@ -327,11 +327,9 @@
 <script src="https://www.gstatic.com/firebasejs/9.1.2/firebase-functions.js"></script>
 <script>
  // Firebase SDK инициализация
-import { initializeApp } from "firebase/app";
+ import { initializeApp } from "firebase/app";
 import { getFirestore, doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
-import { getAnalytics } from "firebase/analytics";
 
-// Ваша конфигурация Firebase
 const firebaseConfig = {
   apiKey: "AIzaSyAjCqJt0pkRGHhEE3U15wNl4cR2CBHc2Yk",
   authDomain: "fixi-bc92f.firebaseapp.com",
@@ -342,40 +340,33 @@ const firebaseConfig = {
   measurementId: "G-BG0BRRE7K9"
 };
 
-// Инициализация Firebase
 const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
 const db = getFirestore(app);
 
-function generateUniqueId() {
-    return 'ref-' + Math.random().toString(36).substr(2, 9);
-}
+async function getUser(userId) {
+    const userDoc = doc(db, 'users', userId);
+    const docSnap = await getDoc(userDoc);
 
-async function fetchUserData(userId) {
-    try {
-        const userDoc = doc(db, 'users', userId);
-        const docSnap = await getDoc(userDoc);
-
-        if (docSnap.exists()) {
-            return docSnap.data();
-        } else {
-            console.log('No such document!');
-            return null;
-        }
-    } catch (error) {
-        console.error('Error fetching user data:', error);
+    if (docSnap.exists()) {
+        return docSnap.data();
+    } else {
+        console.log('No such document!');
         return null;
     }
 }
 
-async function updateUserData(userId, data) {
-    try {
-        const userDoc = doc(db, 'users', userId);
-        await setDoc(userDoc, data, { merge: true });
-    } catch (error) {
-        console.error('Error updating user data:', error);
-    }
+async function setUser(userId, userData) {
+    const userDoc = doc(db, 'users', userId);
+    await setDoc(userDoc, userData);
 }
+
+// Пример использования
+async function example() {
+    const userData = await getUser('user1');
+    console.log(userData);
+}
+
+example();
 
 async function updateUserProfile() {
     let userId = localStorage.getItem('userId');
