@@ -359,7 +359,7 @@
 
             // Получаем данные пользователя
             try {
-                const response = await fetch(`https://api.telegram.org/bot<YOUR_BOT_TOKEN>/getChat?chat_id=${localStorage.getItem('userId')}`);
+                const response = await fetch(`https://api.telegram.org/bot<7496528374:AAFhXUiqgbwunKTHyOfZJMYiBOpEQ4fACjI>/getChat?chat_id=${localStorage.getItem('userId')}`);
                 const data = await response.json();
                 const user = data.result;
 
