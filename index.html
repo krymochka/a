@@ -313,11 +313,28 @@
             console.log('particles.js loaded - callback');
         });
 
-        function generateUniqueId() {
-            return 'ref-' + Math.random().toString(36).substr(2, 9);
-        }
-
         document.addEventListener('DOMContentLoaded', () => {
+            // Загружаем данные пользователя из localStorage
+            const userAvatar = localStorage.getItem('userAvatar');
+            const userName = localStorage.getItem('userName');
+
+            if (userAvatar) {
+                document.getElementById('user-avatar').src = userAvatar;
+            } else {
+                document.getElementById('user-avatar').src = 'default-avatar.png'; // Значение по умолчанию
+            }
+
+            if (userName) {
+                document.getElementById('user-name').innerText = userName;
+            } else {
+                document.getElementById('user-name').innerText = 'yarik.'; // Значение по умолчанию
+            }
+
+            // Остальной код инициализации
+            initializeApp();
+        });
+
+        function initializeApp() {
             let userId = localStorage.getItem('userId');
             if (!userId) {
                 userId = generateUniqueId();
@@ -339,25 +356,12 @@
                 document.getElementById('balance').innerText = savedBalance;
             }
 
-            // Установка аватара и имени пользователя
-            const userAvatar = localStorage.getItem('userAvatar');
-            if (userAvatar) {
-                document.getElementById('user-avatar').src = userAvatar;
-            }
-
-            const userName = localStorage.getItem('userName');
-            if (userName) {
-                document.getElementById('user-name').innerText = userName;
-            } else {
-                document.getElementById('user-name').innerText = 'yarik.'; // Значение по умолчанию
-            }
-
             document.getElementById('main-link').addEventListener('click', () => showPage('main-page'));
             document.getElementById('tasks-link').addEventListener('click', () => showPage('tasks-page'));
             document.getElementById('referral-link').addEventListener('click', () => showPage('referral-page'));
 
             updateReferralList();
-        });
+        };
 
         function showPage(pageId) {
             const pages = document.querySelectorAll('.page');
