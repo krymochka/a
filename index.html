@@ -237,12 +237,16 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            padding: 15px;
-            background-color: rgba(0, 0, 0, 0.8);
-            color: #fff;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
             border-radius: 5px;
-            display: none;
             z-index: 1000;
+            display: none;
+        }
+
+        .notification.show {
+            display: block;
         }
     </style>
 </head>
@@ -260,7 +264,7 @@
                 <div class="game-container">
                     <div class="game-box">
                         <h1>Lucky Game</h1>
-                        <button class="play-button" onclick="showPage('lucky-game-page')">
+                        <button class="play-button" onclick="startLuckyGame()">
                             <i class="fas fa-play"></i>
                         </button>
                         <div class="ticket-balance">🎫 <span id="tickets">3</span></div>
@@ -318,9 +322,8 @@
         </div>
 
         <div id="prize-display" class="prize"></div>
+        <div id="notification" class="notification"></div>
     </div>
-
-    <div id="notification" class="notification"></div>
 
     <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
     <script src="scripts.js"></script>
@@ -334,45 +337,18 @@
         }
 
         document.addEventListener('DOMContentLoaded', async () => {
-            let userId = localStorage.getItem('userId');
-            if (!userId) {
-                userId = generateUniqueId();
-                localStorage.setItem('userId', userId);
-            }
+            const userId = localStorage.getItem('userId') || generateUniqueId();
+            localStorage.setItem('userId', userId);
 
-            const referralLink = `https://t.me/FixiCoin_Bot?ref=${userId}`;
-            document.getElementById('referral-link-display').value = referralLink;
-
-            let userTickets = localStorage.getItem('tickets') ? parseInt(localStorage.getItem('tickets')) : 3;
-            let referralProgress = localStorage.getItem('referralProgress') ? parseInt(localStorage.getItem('referralProgress')) : 0;
-            let taskCompleted = localStorage.getItem('taskCompleted') ? JSON.parse(localStorage.getItem('taskCompleted')) : {1: false, 2: false};
-
-            updateTicketsDisplay(userTickets);
-            updateReferralProgress(referralProgress);
-
-            const savedBalance = localStorage.getItem('balance');
-            if (savedBalance) {
-                document.getElementById('balance').innerText = savedBalance;
-            }
-
-            // Получаем данные пользователя
             try {
-                const chatResponse = await fetch(`https://api.telegram.org/bot<7496528374:AAFhXUiqgbwunKTHyOfZJMYiBOpEQ4fACjI>/getChat?chat_id=${userId}`);
-                const chatData = await chatResponse.json();
-                const user = chatData.result;
+                const response = await fetch(`https://api.telegram.org/bot<YOUR_BOT_TOKEN>/getChat?chat_id=${userId}`);
+                const data = await response.json();
+                const user = data.result;
 
                 if (user) {
-                    // Получаем фото профиля
-                    const photoResponse = await fetch(`https://api.telegram.org/bot<7496528374:AAFhXUiqgbwunKTHyOfZJMYiBOpEQ4fACjI>/getUserProfilePhotos?user_id=${userId}`);
-                    const photoData = await photoResponse.json();
-                    const photo = photoData.result.photos[0] ? photoData.result.photos[0][0].file_id : 'default-avatar-id';
-
-                    const photoFileResponse = await fetch(`https://api.telegram.org/bot<7496528374:AAFhXUiqgbwunKTHyOfZJMYiBOpEQ4fACjI>/getFile?file_id=${photo}`);
-                    const photoFileData = await photoFileResponse.json();
-                    const photoUrl = `https://api.telegram.org/file/bot<7496528374:AAFhXUiqgbwunKTHyOfZJMYiBOpEQ4fACjI>/${photoFileData.result.file_path}`;
-
-                    document.getElementById('user-avatar').src = photoUrl || 'default-avatar-url';
-                    document.getElementById('user-name').innerText = user.first_name || 'yarik.';
+                    const userAvatar = user.photo_url || 'default-avatar-url';
+                    document.getElementById('user-avatar').src = userAvatar;
+                    document.getElementById('user-name').innerText = user.username || 'yarik.';
                 }
             } catch (error) {
                 console.error('Error fetching user data:', error);
@@ -440,19 +416,39 @@
                 let balance = parseInt(document.getElementById('balance').innerText);
                 balance += coinsEarned;
                 document.getElementById('balance').innerText = balance;
-                localStorage.setItem('balance', balance);
 
                 taskCompleted[taskId] = true;
                 localStorage.setItem('taskCompleted', JSON.stringify(taskCompleted));
-            }, 500);
+            }, 1000);
         }
 
-        function updateTicketsDisplay(ticketCount) {
-            document.getElementById('tickets').innerText = ticketCount;
+        function updateTicketsDisplay(tickets) {
+            document.getElementById('tickets').innerText = tickets;
         }
 
-        function updateReferralProgress(progress) {
-            document.getElementById('referral-progress').innerText = progress;
+        function startLuckyGame() {
+            showPage('lucky-game-page');
+            generateTickets();
+        }
+
+        function generateTickets() {
+            const ticketsContainer = document.getElementById('tickets-container');
+            ticketsContainer.innerHTML = '';
+
+            const tickets = parseInt(document.getElementById('tickets').innerText);
+            for (let i = 0; i < tickets; i++) {
+                const ticket = document.createElement('div');
+                ticket.className = 'ticket';
+                ticket.innerText = `Ticket ${i + 1}`;
+                ticketsContainer.appendChild(ticket);
+            }
+        }
+
+        function showNotification(message) {
+            const notification = document.getElementById('notification');
+            notification.innerText = message;
+            notification.classList.add('show');
+            setTimeout(() => notification.classList.remove('show'), 3000);
         }
 
         function copyReferralLink() {
@@ -471,29 +467,12 @@
             const referralList = document.getElementById('referral-list');
             const referrals = JSON.parse(localStorage.getItem('referrals')) || [];
             referralList.innerHTML = '';
+
             referrals.forEach(referral => {
                 const listItem = document.createElement('li');
-                listItem.textContent = referral;
+                listItem.innerText = referral;
                 referralList.appendChild(listItem);
             });
-        }
-
-        function showNotification(message) {
-            const notification = document.getElementById('notification');
-            notification.innerText = message;
-            notification.style.display = 'block';
-            setTimeout(() => {
-                notification.style.display = 'none';
-            }, 3000);
-        }
-
-        function startLuckyGame() {
-            const tickets = parseInt(document.getElementById('tickets').innerText);
-            if (tickets <= 0) {
-                showNotification('You do not have enough tickets to start the game!');
-                return;
-            }
-            // Logic for starting the lucky game
         }
     </script>
 </body>
