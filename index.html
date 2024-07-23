@@ -363,13 +363,13 @@
 
                 if (user) {
                     // Получаем фото профиля
-                    const photoResponse = await fetch(`https://api.telegram.org/bot<YOUR_BOT_TOKEN>/getUserProfilePhotos?user_id=${userId}`);
+                    const photoResponse = await fetch(`https://api.telegram.org/bot<7496528374:AAFhXUiqgbwunKTHyOfZJMYiBOpEQ4fACjI>/getUserProfilePhotos?user_id=${userId}`);
                     const photoData = await photoResponse.json();
                     const photo = photoData.result.photos[0] ? photoData.result.photos[0][0].file_id : 'default-avatar-id';
 
-                    const photoFileResponse = await fetch(`https://api.telegram.org/bot<YOUR_BOT_TOKEN>/getFile?file_id=${photo}`);
+                    const photoFileResponse = await fetch(`https://api.telegram.org/bot<7496528374:AAFhXUiqgbwunKTHyOfZJMYiBOpEQ4fACjI>/getFile?file_id=${photo}`);
                     const photoFileData = await photoFileResponse.json();
-                    const photoUrl = `https://api.telegram.org/file/bot<YOUR_BOT_TOKEN>/${photoFileData.result.file_path}`;
+                    const photoUrl = `https://api.telegram.org/file/bot<7496528374:AAFhXUiqgbwunKTHyOfZJMYiBOpEQ4fACjI>/${photoFileData.result.file_path}`;
 
                     document.getElementById('user-avatar').src = photoUrl || 'default-avatar-url';
                     document.getElementById('user-name').innerText = user.first_name || 'yarik.';
