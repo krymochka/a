@@ -351,30 +351,26 @@
             await updateDoc(userDoc, userData);
         }
 
-        async function fetchUserData(userId) {
-            const userDoc = doc(db, 'users', userId);
-            const docSnap = await getDoc(userDoc);
-            return docSnap.exists() ? docSnap.data() : null;
-        }
-
         async function updateUserProfile() {
             let userId = localStorage.getItem('userId');
             if (!userId) {
                 userId = generateUniqueId();
                 localStorage.setItem('userId', userId);
-                await updateUserData(userId, { tickets: 3, balance: 450, referralProgress: 0, taskCompleted: {1: false, 2: false} });
+                await setUser(userId, { tickets: 3, balance: 450, referralProgress: 0, taskCompleted: {1: false, 2: false} });
             }
 
-            const referralLink = `https://t.me/FixiCoin_Bot?ref=${userId}`;
-            document.getElementById('referral-link-display').value = referralLink;
-
-            const userData = await fetchUserData(userId);
+            const userData = await getUser(userId);
             if (userData) {
-                document.getElementById('user-avatar').src = userData.photo_url || 'default-avatar-url';
-                document.getElementById('user-name').innerText = userData.first_name || 'yarik.';
-                document.getElementById('balance').innerText = userData.balance || '450';
-                updateTicketsDisplay(userData.tickets || 3);
+                document.getElementById('user-avatar').src = userData.photo_url || 'path/to/default-avatar.png';
+                document.getElementById('user-name').innerText = userData.first_name || 'Unknown User';
+                document.getElementById('balance').innerText = userData.balance || '0';
+                updateTicketsDisplay(userData.tickets || 0);
                 updateReferralProgress(userData.referralProgress || 0);
+
+                const referralLink = `https://t.me/FixiCoin_Bot?ref=${userId}`;
+                document.getElementById('referral-link-display').value = referralLink;
+            } else {
+                console.error('User data not found');
             }
         }
 
@@ -431,7 +427,12 @@
                 return;
             }
 
-            await updateTaskCompletion(userId, taskId);
+            const userData = await getUser(userId);
+            if (userData && !userData.taskCompleted[taskId]) {
+                await updateTaskCompletion(userId, taskId);
+            } else {
+                showNotification('This task is already completed or user data not found!');
+            }
         }
 
         function updateTicketsDisplay(tickets) {
@@ -451,18 +452,6 @@
                 notification.style.display = 'none';
             }, 3000);
         }
-
-        document.addEventListener('DOMContentLoaded', () => {
-            updateUserProfile();
-
-            const mainLink = document.getElementById('main-link');
-            const tasksLink = document.getElementById('tasks-link');
-            const referralLink = document.getElementById('referral-link');
-
-            mainLink.addEventListener('click', () => showPage('main-page'));
-            tasksLink.addEventListener('click', () => showPage('tasks-page'));
-            referralLink.addEventListener('click', () => showPage('referral-page'));
-        });
 
         function showPage(pageId) {
             const pages = document.querySelectorAll('.page');
@@ -495,11 +484,19 @@
             document.getElementById('referral-progress').innerText = progress;
         }
 
-        function startLuckyGame() {
-            if (parseInt(document.getElementById('tickets').innerText) >= 1) {
-                let userTickets = parseInt(document.getElementById('tickets').innerText);
+        async function startLuckyGame() {
+            const userId = localStorage.getItem('userId');
+            if (!userId) {
+                console.error('User ID not found');
+                return;
+            }
+            
+            const userData = await getUser(userId);
+            if (userData && userData.tickets >= 1) {
+                let userTickets = userData.tickets;
                 userTickets--;
                 updateTicketsDisplay(userTickets);
+                await updateUserData(userId, { tickets: userTickets });
 
                 const ticketValues = [20, 20, 50, 50, 50, 50, 100, 100, 100, 300, 500, 1000];
                 const shuffledValues = ticketValues.sort(() => Math.random() - 0.5);
@@ -541,6 +538,40 @@
                 updateBalance(prize);
             }, 2000);
         }
+
+        async function updateBalance(prize) {
+            const userId = localStorage.getItem('userId');
+            if (!userId) {
+                console.error('User ID not found');
+                return;
+            }
+
+            const userData = await getUser(userId);
+            if (userData) {
+                const newBalance = userData.balance + prize;
+                await updateUserData(userId, { balance: newBalance });
+                updateUserBalance(newBalance);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            updateUserProfile();
+
+            const mainLink = document.getElementById('main-link');
+            const tasksLink = document.getElementById('tasks-link');
+            const referralLink = document.getElementById('referral-link');
+
+            mainLink.addEventListener('click', () => showPage('main-page'));
+            tasksLink.addEventListener('click', () => showPage('tasks-page'));
+            referralLink.addEventListener('click', () => showPage('referral-page'));
+        });
+
+        // Экспортируем функции, чтобы они были доступны глобально
+        window.showPage = showPage;
+        window.startLuckyGame = startLuckyGame;
+        window.confirmTask = confirmTask;
+        window.copyReferralLink = copyReferralLink;
+        window.sendReferralLink = sendReferralLink;
         
     </script>
     <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
@@ -548,7 +579,6 @@
         particlesJS.load('particles-js', 'particles.json', function() {
             console.log('particles.js loaded');
         });
-    
     </script>
 </body>
 </html>
