@@ -494,12 +494,61 @@
         function updateReferralProgress(progress) {
             document.getElementById('referral-progress').innerText = progress;
         }
+
+        function startLuckyGame() {
+            if (parseInt(document.getElementById('tickets').innerText) >= 1) {
+                let userTickets = parseInt(document.getElementById('tickets').innerText);
+                userTickets--;
+                updateTicketsDisplay(userTickets);
+
+                const ticketValues = [20, 20, 50, 50, 50, 50, 100, 100, 100, 300, 500, 1000];
+                const shuffledValues = ticketValues.sort(() => Math.random() - 0.5);
+                const ticketsContainer = document.getElementById('tickets-container');
+
+                ticketsContainer.innerHTML = '';
+
+                shuffledValues.forEach(value => {
+                    const ticket = document.createElement('div');
+                    ticket.classList.add('ticket');
+                    ticket.innerHTML = '🎫';
+                    ticket.onclick = function() {
+                        if (!ticket.classList.contains('revealed') && !ticket.classList.contains('disabled')) {
+                            ticket.classList.add('revealed');
+                            showPrize(value);
+
+                            const allTickets = document.querySelectorAll('.ticket');
+                            allTickets.forEach(t => {
+                                if (!t.classList.contains('revealed')) {
+                                    t.classList.add('disabled');
+                                }
+                            });
+                        }
+                    };
+                    ticketsContainer.appendChild(ticket);
+                });
+            } else {
+                alert('You need more tickets to play the game!');
+            }
+        }
+
+        function showPrize(prize) {
+            const prizeDisplay = document.getElementById('prize-display');
+            prizeDisplay.innerText = prize;
+            prizeDisplay.classList.add('show');
+
+            setTimeout(() => {
+                prizeDisplay.classList.remove('show');
+                updateBalance(prize);
+            }, 2000);
+        }
+        
     </script>
     <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
     <script>
         particlesJS.load('particles-js', 'particles.json', function() {
             console.log('particles.js loaded');
         });
+    
     </script>
 </body>
 </html>
