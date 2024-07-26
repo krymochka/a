@@ -249,7 +249,6 @@
 <body>
     <div id="particles-js"></div>
     <div class="container mt-5">
-        <!-- Основная страница -->
         <div id="main-page" class="page active">
             <div class="profile-info">
                 <img id="user-avatar" src="" alt="User Avatar">
@@ -270,7 +269,6 @@
                 </div>
             </div>
         </div>
-        <!-- Другие страницы -->
         <div id="lucky-game-page" class="page">
             <h1>Lucky Game</h1>
             <div id="tickets-container" class="d-flex flex-wrap justify-content-center"></div>
@@ -317,7 +315,6 @@
     </div>
     <div id="notification" class="notification"></div>
     
-    <!-- Firebase SDK -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.1.2/firebase-app.js";
         import { getFirestore, doc, getDoc, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/9.1.2/firebase-firestore.js";
@@ -351,45 +348,101 @@
             await updateDoc(userDoc, userData);
         }
 
+        async function getTelegramUserData() {
+            // В реальном приложении здесь должен быть запрос к вашему серверу для получения данных из Telegram
+            // Для примера возвращаем заглушку
+            return {
+                id: '12345',
+                first_name: 'John',
+                last_name: 'Doe',
+                photo_url: 'https://example.com/avatar.jpg'
+            };
+        }
+
         async function updateUserProfile() {
-            let userId = localStorage.getItem('userId');
-            if (!userId) {
-                userId = generateUniqueId();
-                localStorage.setItem('userId', userId);
-                await setUser(userId, { tickets: 3, balance: 450, referralProgress: 0, taskCompleted: {1: false, 2: false} });
+            const telegramData = await getTelegramUserData();
+            let userId = telegramData.id;
+            
+            let userData = await getUser(userId);
+            if (!userData) {
+                userData = {
+                    id: userId,
+                    first_name: telegramData.first_name,
+                    last_name: telegramData.last_name,
+                    photo_url: telegramData.photo_url,
+                    tickets: 3,
+                    balance: 450,
+                    referralProgress: 0,
+                    taskCompleted: {1: false, 2: false}
+                };
+                await setUser(userId, userData);
             }
 
-            const userData = await getUser(userId);
-            if (userData) {
-                document.getElementById('user-avatar').src = userData.photo_url || 'path/to/default-avatar.png';
-                document.getElementById('user-name').innerText = userData.first_name || 'Unknown User';
-                document.getElementById('balance').innerText = userData.balance || '0';
-                updateTicketsDisplay(userData.tickets || 0);
-                updateReferralProgress(userData.referralProgress || 0);
+            document.getElementById('user-avatar').src = userData.photo_url || 'path/to/default-avatar.png';
+            document.getElementById('user-name').innerText = `${userData.first_name} ${userData.last_name}`;
+            document.getElementById('balance').innerText = userData.balance;
+            updateTicketsDisplay(userData.tickets);
+            updateReferralProgress(userData.referralProgress);
 
-                const referralLink = `https://t.me/FixiCoin_Bot?ref=${userId}`;
-                document.getElementById('referral-link-display').value = referralLink;
+            const referralLink = `https://t.me/FixiCoin_Bot?start=${userId}`;
+            document.getElementById('referral-link-display').value = referralLink;
+        }
+
+        function updateTicketsDisplay(tickets) {
+            document.getElementById('tickets').innerText = tickets;
+        }
+
+        function updateUserBalance(balance) {
+            document.getElementById('balance').innerText = balance;
+        }
+
+        function updateReferralProgress(progress) {
+            document.getElementById('referral-progress').innerText = progress;
+        }
+
+        async function startLuckyGame() {
+            const telegramData = await getTelegramUserData();
+            const userId = telegramData.id;
+            
+            const userData = await getUser(userId);
+            if (userData && userData.tickets >= 1) {
+                let userTickets = userData.tickets;
+                userTickets--;
+                updateTicketsDisplay(userTickets);
+                await updateUserData(userId, { tickets: userTickets });
+
+                const ticketValues = [20, 20, 50, 50, 50, 50, 100, 100, 100, 300, 500, 1000];
+                const shuffledValues = ticketValues.sort(() => Math.random() - 0.5);
+                const ticketsContainer = document.getElementById('tickets-container');
+
+                ticketsContainer.innerHTML = '';
+
+                shuffledValues.forEach(value => {
+                    const ticket = document.createElement('div');
+                    ticket.classList.add('ticket');
+                    ticket.innerHTML = '🎫';
+                    ticket.onclick = function() {
+                        if (!ticket.classList.contains('revealed')) {
+                            ticket.classList.add('revealed');
+                            showPrize(value);
+                            updateUserBalance(userData.balance + value);
+                            updateUserData(userId, { balance: userData.balance + value });
+                        }
+                    };
+                    ticketsContainer.appendChild(ticket);
+                });
             } else {
-                console.error('User data not found');
+                showNotification('You need more tickets to play the game!');
             }
         }
 
-        async function updateTaskCompletion(userId, taskId) {
-            try {
-                const userDoc = doc(db, 'users', userId);
-                const userData = await getDoc(userDoc);
+        async function confirmTask(taskId) {
+            const telegramData = await getTelegramUserData();
+            const userId = telegramData.id;
 
-                if (!userData.exists()) {
-                    console.log('User data not found');
-                    return;
-                }
-
-                let { tickets, referralProgress, taskCompleted, balance } = userData.data();
-
-                if (taskCompleted[taskId]) {
-                    showNotification('This task is already completed!');
-                    return;
-                }
+            const userData = await getUser(userId);
+            if (userData && !userData.taskCompleted[taskId]) {
+                let { tickets, balance, taskCompleted } = userData;
 
                 const taskElement = document.getElementById(`task${taskId}`);
                 const btnConfirm = taskElement.querySelector('.btn-confirm');
@@ -411,60 +464,14 @@
                     balance += coinsEarned;
                     taskCompleted[taskId] = true;
 
-                    await updateDoc(userDoc, { tickets, balance, taskCompleted });
+                    await updateUserData(userId, { tickets, balance, taskCompleted });
                     updateTicketsDisplay(tickets);
                     updateUserBalance(balance);
+                    showNotification(`Task completed! You earned ${coinsEarned} coins and tickets.`);
                 }, 3000);
-            } catch (error) {
-                console.error('Error updating task completion:', error);
-            }
-        }
-
-        async function confirmTask(taskId) {
-            const userId = localStorage.getItem('userId');
-            if (!userId) {
-                console.error('User ID not found');
-                return;
-            }
-
-            const userData = await getUser(userId);
-            if (userData && !userData.taskCompleted[taskId]) {
-                await updateTaskCompletion(userId, taskId);
             } else {
                 showNotification('This task is already completed or user data not found!');
             }
-        }
-
-        function updateTicketsDisplay(tickets) {
-            document.getElementById('tickets').innerText = tickets;
-        }
-
-        function updateUserBalance(balance) {
-            document.getElementById('balance').innerText = balance;
-        }
-
-        function showNotification(message) {
-            const notification = document.getElementById('notification');
-            notification.innerText = message;
-            notification.style.display = 'block';
-
-            setTimeout(() => {
-                notification.style.display = 'none';
-            }, 3000);
-        }
-
-        function showPage(pageId) {
-            const pages = document.querySelectorAll('.page');
-            pages.forEach(page => {
-                page.classList.remove('active');
-            });
-
-            const activePage = document.getElementById(pageId);
-            activePage.classList.add('active');
-        }
-
-        function generateUniqueId() {
-            return '_' + Math.random().toString(36).substr(2, 9);
         }
 
         function copyReferralLink() {
@@ -480,100 +487,46 @@
             window.open(telegramUrl, '_blank');
         }
 
-        function updateReferralProgress(progress) {
-            document.getElementById('referral-progress').innerText = progress;
-        }
-
-        async function startLuckyGame() {
-            const userId = localStorage.getItem('userId');
-            if (!userId) {
-                console.error('User ID not found');
-                return;
-            }
-            
-            const userData = await getUser(userId);
-            if (userData && userData.tickets >= 1) {
-                let userTickets = userData.tickets;
-                userTickets--;
-                updateTicketsDisplay(userTickets);
-                await updateUserData(userId, { tickets: userTickets });
-
-                const ticketValues = [20, 20, 50, 50, 50, 50, 100, 100, 100, 300, 500, 1000];
-                const shuffledValues = ticketValues.sort(() => Math.random() - 0.5);
-                const ticketsContainer = document.getElementById('tickets-container');
-
-                ticketsContainer.innerHTML = '';
-
-                shuffledValues.forEach(value => {
-                    const ticket = document.createElement('div');
-                    ticket.classList.add('ticket');
-                    ticket.innerHTML = '🎫';
-                    ticket.onclick = function() {
-                        if (!ticket.classList.contains('revealed') && !ticket.classList.contains('disabled')) {
-                            ticket.classList.add('revealed');
-                            showPrize(value);
-
-                            const allTickets = document.querySelectorAll('.ticket');
-                            allTickets.forEach(t => {
-                                if (!t.classList.contains('revealed')) {
-                                    t.classList.add('disabled');
-                                }
-                            });
-                        }
-                    };
-                    ticketsContainer.appendChild(ticket);
-                });
-            } else {
-                alert('You need more tickets to play the game!');
-            }
+        function showNotification(message) {
+            const notification = document.getElementById('notification');
+            notification.innerText = message;
+            notification.style.display = 'block';
+            setTimeout(() => {
+                notification.style.display = 'none';
+            }, 3000);
         }
 
         function showPrize(prize) {
             const prizeDisplay = document.getElementById('prize-display');
             prizeDisplay.innerText = prize;
             prizeDisplay.classList.add('show');
-
             setTimeout(() => {
                 prizeDisplay.classList.remove('show');
-                updateBalance(prize);
             }, 2000);
         }
 
-        async function updateBalance(prize) {
-            const userId = localStorage.getItem('userId');
-            if (!userId) {
-                console.error('User ID not found');
-                return;
-            }
-
-            const userData = await getUser(userId);
-            if (userData) {
-                const newBalance = userData.balance + prize;
-                await updateUserData(userId, { balance: newBalance });
-                updateUserBalance(newBalance);
-            }
+        function showPage(pageId) {
+            const pages = document.querySelectorAll('.page');
+            pages.forEach(page => page.classList.remove('active'));
+            document.getElementById(pageId).classList.add('active');
         }
 
         document.addEventListener('DOMContentLoaded', () => {
             updateUserProfile();
 
-            const mainLink = document.getElementById('main-link');
-            const tasksLink = document.getElementById('tasks-link');
-            const referralLink = document.getElementById('referral-link');
-
-            mainLink.addEventListener('click', () => showPage('main-page'));
-            tasksLink.addEventListener('click', () => showPage('tasks-page'));
-            referralLink.addEventListener('click', () => showPage('referral-page'));
+            document.getElementById('main-link').addEventListener('click', () => showPage('main-page'));
+            document.getElementById('tasks-link').addEventListener('click', () => showPage('tasks-page'));
+            document.getElementById('referral-link').addEventListener('click', () => showPage('referral-page'));
         });
 
-        // Экспортируем функции, чтобы они были доступны глобально
+        // Экспорт функций в глобальную область видимости
         window.showPage = showPage;
         window.startLuckyGame = startLuckyGame;
         window.confirmTask = confirmTask;
         window.copyReferralLink = copyReferralLink;
         window.sendReferralLink = sendReferralLink;
-        
     </script>
+
     <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
     <script>
         particlesJS.load('particles-js', 'particles.json', function() {
