@@ -327,234 +327,230 @@
     <div id="notification" class="notification"></div>
     
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.1.2/firebase-app.js";
-        import { getFirestore, doc, getDoc, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/9.1.2/firebase-firestore.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.1.2/firebase-app.js";
+    import { getFirestore, doc, getDoc, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/9.1.2/firebase-firestore.js";
 
-        const firebaseConfig = {
+    const firebaseConfig = {
   apiKey: "AIzaSyBPJPlCjxCNUDiN0C1zhxWmYzY62zMjGB4",
   authDomain: "fixi-coin.firebaseapp.com",
   projectId: "fixi-coin",
   storageBucket: "fixi-coin.appspot.com",
   messagingSenderId: "979167879776",
   appId: "1:979167879776:web:0de1f562da51f850cf9905"
-};
+    };
 
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
 
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+    async function getTelegramUserData() {
+        try {
+            const response = await fetch('/get-telegram-user-data', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            });
 
-// Замените URL на ваш реальный URL сервера, который предоставляет данные о пользователе
-const SERVER_URL = 'http://localhost:3000/get-telegram-user-data?userId=${userId}';
-
-async function getTelegramUserData() {
-    try {
-        const response = await fetch(SERVER_URL, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                // Если требуется, добавьте заголовки авторизации
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
             }
-        });
 
-        if (!response.ok) {
-            throw new Error('Network response was not ok');
+            const data = await response.json();
+            return data;
+        } catch (error) {
+            console.error('Error fetching Telegram user data:', error);
+            return {
+                id: 'unknown',
+                first_name: 'Unknown',
+                last_name: 'User',
+                photo_url: 'https://example.com/default-avatar.jpg'
+            };
         }
-
-        const data = await response.json();
-        return data;
-    } catch (error) {
-        console.error('Error fetching Telegram user data:', error);
-        return {
-            id: 'unknown',
-            first_name: 'Unknown',
-            last_name: 'User',
-            photo_url: 'https://example.com/default-avatar.jpg'
-        };
-    }
-}
-
-async function getUser(userId) {
-    const userDoc = doc(db, 'users', userId);
-    const docSnap = await getDoc(userDoc);
-    return docSnap.exists() ? docSnap.data() : null;
-}
-
-async function setUser(userId, userData) {
-    const userDoc = doc(db, 'users', userId);
-    await setDoc(userDoc, userData);
-}
-
-async function updateUserData(userId, userData) {
-    const userDoc = doc(db, 'users', userId);
-    await updateDoc(userDoc, userData);
-}
-
-async function updateUserProfile() {
-    const telegramData = await getTelegramUserData();
-    let userId = telegramData.id;
-    
-    let userData = await getUser(userId);
-    if (!userData) {
-        userData = {
-            id: userId,
-            first_name: telegramData.first_name,
-            last_name: telegramData.last_name,
-            photo_url: telegramData.photo_url,
-            tickets: 3,
-            balance: 450,
-            referralProgress: 0,
-            taskCompleted: {1: false, 2: false}
-        };
-        await setUser(userId, userData);
     }
 
-    document.getElementById('user-avatar').src = userData.photo_url || 'path/to/default-avatar.png';
-    document.getElementById('user-name').innerText = `${userData.first_name} ${userData.last_name}`;
-    document.getElementById('balance').innerText = userData.balance;
-    updateTicketsDisplay(userData.tickets);
-    updateReferralProgress(userData.referralProgress);
+    async function getUser(userId) {
+        const userDoc = doc(db, 'users', userId);
+        const docSnap = await getDoc(userDoc);
+        return docSnap.exists() ? docSnap.data() : null;
+    }
 
-    const referralLink = `https://t.me/FixiCoin_Bot?start=${userId}`;
-    document.getElementById('referral-link-display').value = referralLink;
-}
+    async function setUser(userId, userData) {
+        const userDoc = doc(db, 'users', userId);
+        await setDoc(userDoc, userData);
+    }
 
-function updateTicketsDisplay(tickets) {
-    document.getElementById('tickets').innerText = tickets;
-}
+    async function updateUserData(userId, userData) {
+        const userDoc = doc(db, 'users', userId);
+        await updateDoc(userDoc, userData);
+    }
 
-function updateUserBalance(balance) {
-    document.getElementById('balance').innerText = balance;
-}
-
-function updateReferralProgress(progress) {
-    document.getElementById('referral-progress').innerText = progress;
-}
-        async function startLuckyGame() {
-            const telegramData = await getTelegramUserData();
-            const userId = telegramData.id;
-            
-            const userData = await getUser(userId);
-            if (userData && userData.tickets >= 1) {
-                let userTickets = userData.tickets;
-                userTickets--;
-                updateTicketsDisplay(userTickets);
-                await updateUserData(userId, { tickets: userTickets });
-
-                const ticketValues = [20, 20, 50, 50, 50, 50, 100, 100, 100, 300, 500, 1000];
-                const shuffledValues = ticketValues.sort(() => Math.random() - 0.5);
-                const ticketsContainer = document.getElementById('tickets-container');
-
-                ticketsContainer.innerHTML = '';
-
-                shuffledValues.forEach(value => {
-                    const ticket = document.createElement('div');
-                    ticket.classList.add('ticket');
-                    ticket.innerHTML = '🎫';
-                    ticket.onclick = function() {
-                        if (!ticket.classList.contains('revealed')) {
-                            ticket.classList.add('revealed');
-                            showPrize(value);
-                            updateUserBalance(userData.balance + value);
-                            updateUserData(userId, { balance: userData.balance + value });
-                        }
-                    };
-                    ticketsContainer.appendChild(ticket);
-                });
-            } else {
-                showNotification('You need more tickets to play the game!');
-            }
+    async function updateUserProfile() {
+        const telegramData = await getTelegramUserData();
+        let userId = telegramData.id;
+        
+        let userData = await getUser(userId);
+        if (!userData) {
+            userData = {
+                id: userId,
+                first_name: telegramData.first_name,
+                last_name: telegramData.last_name,
+                photo_url: telegramData.photo_url,
+                tickets: 3,
+                balance: 450,
+                referralProgress: 0,
+                taskCompleted: {1: false, 2: false}
+            };
+            await setUser(userId, userData);
         }
 
-        async function confirmTask(taskId) {
-            const telegramData = await getTelegramUserData();
-            const userId = telegramData.id;
+        document.getElementById('user-avatar').src = userData.photo_url || 'path/to/default-avatar.png';
+        document.getElementById('user-name').innerText = `${userData.first_name} ${userData.last_name}`;
+        document.getElementById('balance').innerText = userData.balance;
+        updateTicketsDisplay(userData.tickets);
+        updateReferralProgress(userData.referralProgress);
 
-            const userData = await getUser(userId);
-            if (userData && !userData.taskCompleted[taskId]) {
-                let { tickets, balance, taskCompleted } = userData;
+        const referralLink = `https://t.me/FixiCoin_Bot?start=${userId}`;
+        document.getElementById('referral-link-display').value = referralLink;
+    }
 
-                const taskElement = document.getElementById(`task${taskId}`);
-                const btnConfirm = taskElement.querySelector('.btn-confirm');
-                btnConfirm.disabled = true;
-                btnConfirm.innerText = 'Confirmed!';
+    function updateTicketsDisplay(tickets) {
+        document.getElementById('tickets').innerText = tickets;
+    }
 
-                setTimeout(async () => {
-                    let coinsEarned;
-                    switch (taskId) {
-                        case 1:
-                            coinsEarned = 300;
-                            tickets += 1;
-                            break;
-                        case 2:
-                            coinsEarned = 1000;
-                            tickets += 5;
-                            break;
+    function updateUserBalance(balance) {
+        document.getElementById('balance').innerText = balance;
+    }
+
+    function updateReferralProgress(progress) {
+        document.getElementById('referral-progress').innerText = progress;
+    }
+
+    async function startLuckyGame() {
+        const telegramData = await getTelegramUserData();
+        const userId = telegramData.id;
+        
+        const userData = await getUser(userId);
+        if (userData && userData.tickets >= 1) {
+            let userTickets = userData.tickets;
+            userTickets--;
+            updateTicketsDisplay(userTickets);
+            await updateUserData(userId, { tickets: userTickets });
+
+            const ticketValues = [20, 20, 50, 50, 50, 50, 100, 100, 100, 300, 500, 1000];
+            const shuffledValues = ticketValues.sort(() => Math.random() - 0.5);
+            const ticketsContainer = document.getElementById('tickets-container');
+
+            ticketsContainer.innerHTML = '';
+
+            shuffledValues.forEach(value => {
+                const ticket = document.createElement('div');
+                ticket.classList.add('ticket');
+                ticket.innerHTML = '🎫';
+                ticket.onclick = function() {
+                    if (!ticket.classList.contains('revealed')) {
+                        ticket.classList.add('revealed');
+                        showPrize(value);
+                        updateUserBalance(userData.balance + value);
+                        updateUserData(userId, { balance: userData.balance + value });
                     }
-                    balance += coinsEarned;
-                    taskCompleted[taskId] = true;
-
-                    await updateUserData(userId, { tickets, balance, taskCompleted });
-                    updateTicketsDisplay(tickets);
-                    updateUserBalance(balance);
-                    showNotification(`Task completed! You earned ${coinsEarned} coins and tickets.`);
-                }, 3000);
-            } else {
-                showNotification('This task is already completed or user data not found!');
-            }
+                };
+                ticketsContainer.appendChild(ticket);
+            });
+        } else {
+            showNotification('You need more tickets to play the game!');
         }
+    }
 
-        function copyReferralLink() {
-            const referralLinkInput = document.getElementById('referral-link-display');
-            referralLinkInput.select();
-            document.execCommand('copy');
-            showNotification('Referral link copied to clipboard');
-        }
+    async function confirmTask(taskId) {
+        const telegramData = await getTelegramUserData();
+        const userId = telegramData.id;
 
-        function sendReferralLink() {
-            const referralLink = document.getElementById('referral-link-display').value;
-            const telegramUrl = `https://t.me/share/url?url=${encodeURIComponent(referralLink)}`;
-            window.open(telegramUrl, '_blank');
-        }
+        const userData = await getUser(userId);
+        if (userData && !userData.taskCompleted[taskId]) {
+            let { tickets, balance, taskCompleted } = userData;
 
-        function showNotification(message) {
-            const notification = document.getElementById('notification');
-            notification.innerText = message;
-            notification.style.display = 'block';
-            setTimeout(() => {
-                notification.style.display = 'none';
+            const taskElement = document.getElementById(`task${taskId}`);
+            const btnConfirm = taskElement.querySelector('.btn-confirm');
+            btnConfirm.disabled = true;
+            btnConfirm.innerText = 'Confirmed!';
+
+            setTimeout(async () => {
+                let coinsEarned;
+                switch (taskId) {
+                    case 1:
+                        coinsEarned = 300;
+                        tickets += 1;
+                        break;
+                    case 2:
+                        coinsEarned = 1000;
+                        tickets += 5;
+                        break;
+                }
+                balance += coinsEarned;
+                taskCompleted[taskId] = true;
+
+                await updateUserData(userId, { tickets, balance, taskCompleted });
+                updateTicketsDisplay(tickets);
+                updateUserBalance(balance);
+                showNotification(`Task completed! You earned ${coinsEarned} coins and tickets.`);
             }, 3000);
+        } else {
+            showNotification('This task is already completed or user data not found!');
         }
+    }
 
-        function showPrize(prize) {
-            const prizeDisplay = document.getElementById('prize-display');
-            prizeDisplay.innerText = prize;
-            prizeDisplay.classList.add('show');
-            setTimeout(() => {
-                prizeDisplay.classList.remove('show');
-            }, 2000);
-        }
+    function copyReferralLink() {
+        const referralLinkInput = document.getElementById('referral-link-display');
+        referralLinkInput.select();
+        document.execCommand('copy');
+        showNotification('Referral link copied to clipboard');
+    }
 
-        function showPage(pageId) {
-            const pages = document.querySelectorAll('.page');
-            pages.forEach(page => page.classList.remove('active'));
-            document.getElementById(pageId).classList.add('active');
-        }
+    function sendReferralLink() {
+        const referralLink = document.getElementById('referral-link-display').value;
+        const telegramUrl = `https://t.me/share/url?url=${encodeURIComponent(referralLink)}`;
+        window.open(telegramUrl, '_blank');
+    }
 
-        document.addEventListener('DOMContentLoaded', () => {
-            updateUserProfile();
+    function showNotification(message) {
+        const notification = document.getElementById('notification');
+        notification.innerText = message;
+        notification.style.display = 'block';
+        setTimeout(() => {
+            notification.style.display = 'none';
+        }, 3000);
+    }
 
-            document.getElementById('main-link').addEventListener('click', () => showPage('main-page'));
-            document.getElementById('tasks-link').addEventListener('click', () => showPage('tasks-page'));
-            document.getElementById('referral-link').addEventListener('click', () => showPage('referral-page'));
-        });
+    function showPrize(prize) {
+        const prizeDisplay = document.getElementById('prize-display');
+        prizeDisplay.innerText = prize;
+        prizeDisplay.classList.add('show');
+        setTimeout(() => {
+            prizeDisplay.classList.remove('show');
+        }, 2000);
+    }
 
-        // Экспорт функций в глобальную область видимости
-        window.showPage = showPage;
-        window.startLuckyGame = startLuckyGame;
-        window.confirmTask = confirmTask;
-        window.copyReferralLink = copyReferralLink;
-        window.sendReferralLink = sendReferralLink;
-    </script>
+    function showPage(pageId) {
+        const pages = document.querySelectorAll('.page');
+        pages.forEach(page => page.classList.remove('active'));
+        document.getElementById(pageId).classList.add('active');
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        updateUserProfile();
+
+        document.getElementById('main-link').addEventListener('click', () => showPage('main-page'));
+        document.getElementById('tasks-link').addEventListener('click', () => showPage('tasks-page'));
+        document.getElementById('referral-link').addEventListener('click', () => showPage('referral-page'));
+    });
+
+    window.showPage = showPage;
+    window.startLuckyGame = startLuckyGame;
+    window.confirmTask = confirmTask;
+    window.copyReferralLink = copyReferralLink;
+    window.sendReferralLink = sendReferralLink;
+</script>
+
 
     <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
     <script>
