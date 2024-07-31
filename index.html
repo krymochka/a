@@ -344,7 +344,7 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 // Замените URL на ваш реальный URL сервера, который предоставляет данные о пользователе
-const SERVER_URL = 'https://your-server.com/api/telegram-user';
+const SERVER_URL = 'http://localhost:3000/get-telegram-user-data?userId=${userId}';
 
 async function getTelegramUserData() {
     try {
