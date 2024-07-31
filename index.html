@@ -383,17 +383,19 @@ async function setUser(userId, userData) {
     await setDoc(userDoc, userData);
 }
 
-async function updateUserData(userId, userData) {
-    const userDoc = doc(db, 'users', userId);
-    await updateDoc(userDoc, userData);
-}
-
 async function updateUserProfile() {
     const telegramData = await getTelegramUserData();
+    console.log('Telegram user data:', telegramData);  // Логируем полученные данные
+
     let userId = telegramData.id;
-    
+    console.log('User ID:', userId);  // Логируем ID пользователя
+
+    // Проверяем, существует ли пользователь в базе данных
     let userData = await getUser(userId);
+    console.log('User data from Firestore:', userData);  // Логируем данные из Firestore
+
     if (!userData) {
+        // Если пользователь не найден, создаем его
         userData = {
             id: userId,
             first_name: telegramData.first_name,
@@ -405,14 +407,17 @@ async function updateUserProfile() {
             taskCompleted: {1: false, 2: false}
         };
         await setUser(userId, userData);
+        console.log('Created new user:', userData);  // Логируем созданного пользователя
     }
 
+    // Обновляем UI с данными пользователя
     document.getElementById('user-avatar').src = userData.photo_url || 'path/to/default-avatar.png';
     document.getElementById('user-name').innerText = `${userData.first_name} ${userData.last_name}`;
     document.getElementById('balance').innerText = userData.balance;
     updateTicketsDisplay(userData.tickets);
     updateReferralProgress(userData.referralProgress);
 
+    // Обновляем реферальную ссылку
     const referralLink = `https://t.me/FixiCoin_Bot?start=${userId}`;
     document.getElementById('referral-link-display').value = referralLink;
 }
