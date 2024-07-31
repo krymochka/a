@@ -360,16 +360,15 @@
         }
 
         async function getTelegramUserData() {
-    // Замени URL на URL вашего сервера
-    const userId = '12345'; // В реальном приложении используйте динамический ID
-    const response = await fetch(`http://localhost:3000/get-telegram-user-data?userId=${userId}`);
-    
-    if (!response.ok) {
-        throw new Error('Network response was not ok');
-    }
-    
-    return response.json();
-}
+            // В реальном приложении здесь должен быть запрос к вашему серверу для получения данных из Telegram
+            // Для примера возвращаем заглушку
+            return {
+                id: '12345',
+                first_name: 'John',
+                last_name: 'Doe',
+                photo_url: 'https://example.com/avatar.jpg'
+            };
+        }
 
         async function updateUserProfile() {
             const telegramData = await getTelegramUserData();
