@@ -331,20 +331,20 @@
         import { getFirestore, doc, getDoc, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/9.1.2/firebase-firestore.js";
 
         const firebaseConfig = {
-    apiKey: "AIzaSyAjCqJt0pkRGHhEE3U15wNl4cR2CBHc2Yk",
-    authDomain: "fixi-bc92f.firebaseapp.com",
-    projectId: "fixi-bc92f",
-    storageBucket: "fixi-bc92f.appspot.com",
-    messagingSenderId: "781753514086",
-    appId: "1:781753514086:web:dab710e1752c5c102115a7",
-    measurementId: "G-BG0BRRE7K9"
+  apiKey: "AIzaSyBPJPlCjxCNUDiN0C1zhxWmYzY62zMjGB4",
+  authDomain: "fixi-coin.firebaseapp.com",
+  projectId: "fixi-coin",
+  storageBucket: "fixi-coin.appspot.com",
+  messagingSenderId: "979167879776",
+  appId: "1:979167879776:web:0de1f562da51f850cf9905"
 };
+
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 // Замените URL на ваш реальный URL сервера, который предоставляет данные о пользователе
-const SERVER_URL = 'http://localhost:3000/get-telegram-user-data?userId=${userId}';
+const SERVER_URL = 'https://your-server.com/api/telegram-user';
 
 async function getTelegramUserData() {
     try {
