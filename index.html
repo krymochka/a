@@ -342,7 +342,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-const SERVER_URL = 'http://localhost:3000/get-telegram-user-data?userId=${userId}';
+const SERVER_URL = `http://localhost:3000/get-telegram-user-data?userId=${userId}`;
 
 async function getTelegramUserData() {
     try {
@@ -359,6 +359,7 @@ async function getTelegramUserData() {
         }
 
         const data = await response.json();
+        console.log('Received Telegram user data:', data);  // Добавьте это для отладки
         return data;
     } catch (error) {
         console.error('Error fetching Telegram user data:', error);
