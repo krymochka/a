@@ -328,9 +328,9 @@
     
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.1.2/firebase-app.js";
-        import { getFirestore, doc, getDoc, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/9.1.2/firebase-firestore.js";
+import { getFirestore, doc, getDoc, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/9.1.2/firebase-firestore.js";
 
-        const firebaseConfig = {
+const firebaseConfig = {
   apiKey: "AIzaSyBPJPlCjxCNUDiN0C1zhxWmYzY62zMjGB4",
   authDomain: "fixi-coin.firebaseapp.com",
   projectId: "fixi-coin",
@@ -342,7 +342,6 @@
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// Замените URL на ваш реальный URL сервера, который предоставляет данные о пользователе
 const SERVER_URL = 'http://localhost:3000/get-telegram-user-data?userId=${userId}';
 
 async function getTelegramUserData() {
@@ -392,10 +391,8 @@ async function updateUserProfile() {
     const telegramData = await getTelegramUserData();
     let userId = telegramData.id;
     
-    // Проверяем, существует ли пользователь в базе данных
     let userData = await getUser(userId);
     if (!userData) {
-        // Если пользователь не найден, создаем его
         userData = {
             id: userId,
             first_name: telegramData.first_name,
@@ -409,14 +406,12 @@ async function updateUserProfile() {
         await setUser(userId, userData);
     }
 
-    // Обновляем UI с данными пользователя
     document.getElementById('user-avatar').src = userData.photo_url || 'path/to/default-avatar.png';
     document.getElementById('user-name').innerText = `${userData.first_name} ${userData.last_name}`;
     document.getElementById('balance').innerText = userData.balance;
     updateTicketsDisplay(userData.tickets);
     updateReferralProgress(userData.referralProgress);
 
-    // Обновляем реферальную ссылку
     const referralLink = `https://t.me/FixiCoin_Bot?start=${userId}`;
     document.getElementById('referral-link-display').value = referralLink;
 }
@@ -432,131 +427,132 @@ function updateUserBalance(balance) {
 function updateReferralProgress(progress) {
     document.getElementById('referral-progress').innerText = progress;
 }
-        async function startLuckyGame() {
-            const telegramData = await getTelegramUserData();
-            const userId = telegramData.id;
-            
-            const userData = await getUser(userId);
-            if (userData && userData.tickets >= 1) {
-                let userTickets = userData.tickets;
-                userTickets--;
-                updateTicketsDisplay(userTickets);
-                await updateUserData(userId, { tickets: userTickets });
 
-                const ticketValues = [20, 20, 50, 50, 50, 50, 100, 100, 100, 300, 500, 1000];
-                const shuffledValues = ticketValues.sort(() => Math.random() - 0.5);
-                const ticketsContainer = document.getElementById('tickets-container');
+async function startLuckyGame() {
+    const telegramData = await getTelegramUserData();
+    const userId = telegramData.id;
+    
+    const userData = await getUser(userId);
+    if (userData && userData.tickets >= 1) {
+        let userTickets = userData.tickets;
+        userTickets--;
+        updateTicketsDisplay(userTickets);
+        await updateUserData(userId, { tickets: userTickets });
 
-                ticketsContainer.innerHTML = '';
+        const ticketValues = [20, 20, 50, 50, 50, 50, 100, 100, 100, 300, 500, 1000];
+        const shuffledValues = ticketValues.sort(() => Math.random() - 0.5);
+        const ticketsContainer = document.getElementById('tickets-container');
 
-                shuffledValues.forEach(value => {
-                    const ticket = document.createElement('div');
-                    ticket.classList.add('ticket');
-                    ticket.innerHTML = '🎫';
-                    ticket.onclick = function() {
-                        if (!ticket.classList.contains('revealed')) {
-                            ticket.classList.add('revealed');
-                            showPrize(value);
-                            updateUserBalance(userData.balance + value);
-                            updateUserData(userId, { balance: userData.balance + value });
-                        }
-                    };
-                    ticketsContainer.appendChild(ticket);
-                });
-            } else {
-                showNotification('You need more tickets to play the game!');
-            }
-        }
+        ticketsContainer.innerHTML = '';
 
-        async function confirmTask(taskId) {
-            const telegramData = await getTelegramUserData();
-            const userId = telegramData.id;
-
-            const userData = await getUser(userId);
-            if (userData && !userData.taskCompleted[taskId]) {
-                let { tickets, balance, taskCompleted } = userData;
-
-                const taskElement = document.getElementById(`task${taskId}`);
-                const btnConfirm = taskElement.querySelector('.btn-confirm');
-                btnConfirm.disabled = true;
-                btnConfirm.innerText = 'Confirmed!';
-
-                setTimeout(async () => {
-                    let coinsEarned;
-                    switch (taskId) {
-                        case 1:
-                            coinsEarned = 300;
-                            tickets += 1;
-                            break;
-                        case 2:
-                            coinsEarned = 1000;
-                            tickets += 5;
-                            break;
-                    }
-                    balance += coinsEarned;
-                    taskCompleted[taskId] = true;
-
-                    await updateUserData(userId, { tickets, balance, taskCompleted });
-                    updateTicketsDisplay(tickets);
-                    updateUserBalance(balance);
-                    showNotification(`Task completed! You earned ${coinsEarned} coins and tickets.`);
-                }, 3000);
-            } else {
-                showNotification('This task is already completed or user data not found!');
-            }
-        }
-
-        function copyReferralLink() {
-            const referralLinkInput = document.getElementById('referral-link-display');
-            referralLinkInput.select();
-            document.execCommand('copy');
-            showNotification('Referral link copied to clipboard');
-        }
-
-        function sendReferralLink() {
-            const referralLink = document.getElementById('referral-link-display').value;
-            const telegramUrl = `https://t.me/share/url?url=${encodeURIComponent(referralLink)}`;
-            window.open(telegramUrl, '_blank');
-        }
-
-        function showNotification(message) {
-            const notification = document.getElementById('notification');
-            notification.innerText = message;
-            notification.style.display = 'block';
-            setTimeout(() => {
-                notification.style.display = 'none';
-            }, 3000);
-        }
-
-        function showPrize(prize) {
-            const prizeDisplay = document.getElementById('prize-display');
-            prizeDisplay.innerText = prize;
-            prizeDisplay.classList.add('show');
-            setTimeout(() => {
-                prizeDisplay.classList.remove('show');
-            }, 2000);
-        }
-
-        function showPage(pageId) {
-            const pages = document.querySelectorAll('.page');
-            pages.forEach(page => page.classList.remove('active'));
-            document.getElementById(pageId).classList.add('active');
-        }
-
-        document.addEventListener('DOMContentLoaded', () => {
-            updateUserProfile();
-
-            document.getElementById('main-link').addEventListener('click', () => showPage('main-page'));
-            document.getElementById('tasks-link').addEventListener('click', () => showPage('tasks-page'));
-            document.getElementById('referral-link').addEventListener('click', () => showPage('referral-page'));
+        shuffledValues.forEach(value => {
+            const ticket = document.createElement('div');
+            ticket.classList.add('ticket');
+            ticket.innerHTML = '🎫';
+            ticket.onclick = function() {
+                if (!ticket.classList.contains('revealed')) {
+                    ticket.classList.add('revealed');
+                    showPrize(value);
+                    updateUserBalance(userData.balance + value);
+                    updateUserData(userId, { balance: userData.balance + value });
+                }
+            };
+            ticketsContainer.appendChild(ticket);
         });
+    } else {
+        showNotification('You need more tickets to play the game!');
+    }
+}
 
-        // Экспорт функций в глобальную область видимости
-        window.showPage = showPage;
-        window.startLuckyGame = startLuckyGame;
-        window.confirmTask = confirmTask;
-        window.copyReferralLink = copyReferralLink;
-        window.sendReferralLink = sendReferralLink;
+async function confirmTask(taskId) {
+    const telegramData = await getTelegramUserData();
+    const userId = telegramData.id;
+
+    const userData = await getUser(userId);
+    if (userData && !userData.taskCompleted[taskId]) {
+        let { tickets, balance, taskCompleted } = userData;
+
+        const taskElement = document.getElementById(`task${taskId}`);
+        const btnConfirm = taskElement.querySelector('.btn-confirm');
+        btnConfirm.disabled = true;
+        btnConfirm.innerText = 'Confirmed!';
+
+        setTimeout(async () => {
+            let coinsEarned;
+            switch (taskId) {
+                case 1:
+                    coinsEarned = 300;
+                    tickets += 1;
+                    break;
+                case 2:
+                    coinsEarned = 1000;
+                    tickets += 5;
+                    break;
+            }
+            balance += coinsEarned;
+            taskCompleted[taskId] = true;
+
+            await updateUserData(userId, { tickets, balance, taskCompleted });
+            updateTicketsDisplay(tickets);
+            updateUserBalance(balance);
+            showNotification(`Task completed! You earned ${coinsEarned} coins and tickets.`);
+        }, 3000);
+    } else {
+        showNotification('This task is already completed or user data not found!');
+    }
+}
+
+function copyReferralLink() {
+    const referralLinkInput = document.getElementById('referral-link-display');
+    referralLinkInput.select();
+    document.execCommand('copy');
+    showNotification('Referral link copied to clipboard');
+}
+
+function sendReferralLink() {
+    const referralLink = document.getElementById('referral-link-display').value;
+    const telegramUrl = `https://t.me/share/url?url=${encodeURIComponent(referralLink)}`;
+    window.open(telegramUrl, '_blank');
+}
+
+function showNotification(message) {
+    const notification = document.getElementById('notification');
+    notification.innerText = message;
+    notification.style.display = 'block';
+    setTimeout(() => {
+        notification.style.display = 'none';
+    }, 3000);
+}
+
+function showPrize(prize) {
+    const prizeDisplay = document.getElementById('prize-display');
+    prizeDisplay.innerText = prize;
+    prizeDisplay.classList.add('show');
+    setTimeout(() => {
+        prizeDisplay.classList.remove('show');
+    }, 2000);
+}
+
+function showPage(pageId) {
+    const pages = document.querySelectorAll('.page');
+    pages.forEach(page => page.classList.remove('active'));
+    document.getElementById(pageId).classList.add('active');
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    updateUserProfile();
+
+    document.getElementById('main-link').addEventListener('click', () => showPage('main-page'));
+    document.getElementById('tasks-link').addEventListener('click', () => showPage('tasks-page'));
+    document.getElementById('referral-link').addEventListener('click', () => showPage('referral-page'));
+});
+
+// Экспорт функций в глобальную область видимости
+window.showPage = showPage;
+window.startLuckyGame = startLuckyGame;
+window.confirmTask = confirmTask;
+window.copyReferralLink = copyReferralLink;
+window.sendReferralLink = sendReferralLink;
     </script>
 
     <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
