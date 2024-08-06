@@ -345,72 +345,69 @@
         let userId;
 
         async function getTelegramUserData() {
-            const urlParams = new URLSearchParams(window.location.search);
-            userId = urlParams.get('id');
-            const first_name = urlParams.get('first_name');
-            const last_name = urlParams.get('last_name');
-            const photo_url = urlParams.get('photo_url');
+    const urlParams = new URLSearchParams(window.location.search);
+    userId = urlParams.get('id');
+    const first_name = urlParams.get('first_name');
+    const last_name = urlParams.get('last_name');
+    const photo_url = urlParams.get('photo_url');
 
-            if (!userId) {
-                console.error('User ID not found in URL parameters');
-                return null;
-            }
+    if (!userId) {
+        console.error('User ID not found in URL parameters');
+        // Генеруємо тимчасовий ID для демонстрації
+        userId = 'temp_' + Math.random().toString(36).substr(2, 9);
+    }
 
-            return {
-                id: userId,
-                first_name: first_name || 'Unknown',
-                last_name: last_name || 'User',
-                photo_url: photo_url || 'https://example.com/default-avatar.jpg'
-            };
+    return {
+        id: userId,
+        first_name: first_name || 'Guest',
+        last_name: last_name || 'User',
+        photo_url: photo_url || 'https://example.com/default-avatar.jpg'
+    };
+}
+
+async function updateUserProfile() {
+    const telegramData = await getTelegramUserData();
+    if (!telegramData) {
+        showNotification('Failed to load user data');
+        return;
+    }
+    
+    let userData;
+    try {
+        userData = await getUser(userId);
+    } catch (error) {
+        console.error('Error fetching user data:', error);
+    }
+
+    if (!userData) {
+        userData = {
+            id: userId,
+            first_name: telegramData.first_name,
+            last_name: telegramData.last_name,
+            photo_url: telegramData.photo_url,
+            tickets: 3,
+            balance: 450,
+            referralProgress: 0,
+            taskCompleted: {1: false, 2: false}
+        };
+        try {
+            await setUser(userId, userData);
+        } catch (error) {
+            console.error('Error setting new user data:', error);
+            showNotification('Error creating user profile');
+            return;
         }
+    }
 
-        async function getUser(userId) {
-            const userDoc = doc(db, 'users', userId);
-            const docSnap = await getDoc(userDoc);
-            return docSnap.exists() ? docSnap.data() : null;
-        }
+    document.getElementById('user-avatar').src = userData.photo_url;
+    document.getElementById('user-name').innerText = `${userData.first_name} ${userData.last_name}`;
+    document.getElementById('balance').innerText = userData.balance;
+    updateTicketsDisplay(userData.tickets);
+    updateReferralProgress(userData.referralProgress);
 
-        async function setUser(userId, userData) {
-            const userDoc = doc(db, 'users', userId);
-            await setDoc(userDoc, userData);
-        }
-
-        async function updateUserData(userId, userData) {
-            const userDoc = doc(db, 'users', userId);
-            await updateDoc(userDoc, userData);
-        }
-
-        async function updateUserProfile() {
-            const telegramData = await getTelegramUserData();
-            if (!telegramData) {
-                showNotification('Failed to load user data');
-                return;
-            }
-            
-            let userData = await getUser(userId);
-            if (!userData) {
-                userData = {
-                    id: userId,
-                    first_name: telegramData.first_name,
-                    last_name: telegramData.last_name,
-                    photo_url: telegramData.photo_url,
-                    tickets: 3,
-                    balance: 450,
-                    referralProgress: 0,
-                    taskCompleted: {1: false, 2: false}
-                };
-                await setUser(userId, userData);
-            }
-
-            document.getElementById('user-avatar').src = userData.photo_url;
-            document.getElementById('user-name').innerText = `${userData.first_name} ${userData.last_name}`;
-            document.getElementById('balance').innerText = userData.balance;
-            updateTicketsDisplay(userData.tickets);
-            updateReferralProgress(userData.referralProgress);
-
-            const referralLink = `https://t.me/FixiCoin_Bot?start=${userId}`;
-            document.getElementById('referral-link-display').value = referralLink;
-        }
+    const referralLink = `https://t.me/FixiCoin_Bot?start=${userId}`;
+    document.getElementById('referral-link-display').value = referralLink;
+}
 
         function updateTicketsDisplay(tickets) {
             document.getElementById('tickets').innerText = tickets;
@@ -423,6 +420,17 @@
         function updateReferralProgress(progress) {
             document.getElementById('referral-progress').innerText = progress;
         }
+
+        async function checkFirebaseConnection() {
+    try {
+        const testDoc = doc(db, 'test', 'testDoc');
+        await setDoc(testDoc, { test: 'data' });
+        await getDoc(testDoc);
+        console.log('Firebase connection successful');
+    } catch (error) {
+        console.error('Firebase connection failed:', error);
+        showNotification('Error connecting to database');
+    }
 
         async function startLuckyGame() {
             const userData = await getUser(userId);
@@ -530,12 +538,14 @@
         }
 
         document.addEventListener('DOMContentLoaded', function() {
-            updateUserProfile();
+    checkFirebaseConnection().then(() => {
+        updateUserProfile();
+    });
 
-            document.getElementById('main-link').addEventListener('click', () => showPage('main-page'));
-            document.getElementById('tasks-link').addEventListener('click', () => showPage('tasks-page'));
-            document.getElementById('referral-link').addEventListener('click', () => showPage('referral-page'));
-        });
+    document.getElementById('main-link').addEventListener('click', () => showPage('main-page'));
+    document.getElementById('tasks-link').addEventListener('click', () => showPage('tasks-page'));
+    document.getElementById('referral-link').addEventListener('click', () => showPage('referral-page'));
+});
 
         // Export functions to global scope
         window.showPage = showPage;
@@ -551,5 +561,5 @@
             console.log('particles.js loaded');
         });
     </script>
-</body>
+    </body>
 </html>
