@@ -345,15 +345,17 @@
         let userId;
 
         async function getTelegramUserData() {
+    console.log('Getting Telegram user data');
     const urlParams = new URLSearchParams(window.location.search);
     userId = urlParams.get('id');
     const first_name = urlParams.get('first_name');
     const last_name = urlParams.get('last_name');
     const photo_url = urlParams.get('photo_url');
 
+    console.log('URL parameters:', { userId, first_name, last_name, photo_url });
+
     if (!userId) {
-        console.error('User ID not found in URL parameters');
-        // Генеруємо тимчасовий ID для демонстрації
+        console.warn('User ID not found in URL parameters, generating temporary ID');
         userId = 'temp_' + Math.random().toString(36).substr(2, 9);
     }
 
@@ -366,22 +368,27 @@
 }
 
 async function updateUserProfile() {
-    console.log('Starting updateUserProfile');
+    console.log('Updating user profile');
     const telegramData = await getTelegramUserData();
     console.log('Telegram data:', telegramData);
+
     if (!telegramData) {
+        console.error('Failed to load user data');
         showNotification('Failed to load user data');
         return;
     }
     
     let userData;
     try {
+        console.log('Fetching user data from Firestore');
         userData = await getUser(userId);
+        console.log('User data from Firestore:', userData);
     } catch (error) {
         console.error('Error fetching user data:', error);
     }
 
     if (!userData) {
+        console.log('User not found in Firestore, creating new user');
         userData = {
             id: userId,
             first_name: telegramData.first_name,
@@ -393,7 +400,9 @@ async function updateUserProfile() {
             taskCompleted: {1: false, 2: false}
         };
         try {
+            console.log('Setting new user data in Firestore');
             await setUser(userId, userData);
+            console.log('New user data set successfully');
         } catch (error) {
             console.error('Error setting new user data:', error);
             showNotification('Error creating user profile');
@@ -401,6 +410,7 @@ async function updateUserProfile() {
         }
     }
 
+    console.log('Updating UI with user data');
     document.getElementById('user-avatar').src = userData.photo_url;
     document.getElementById('user-name').innerText = `${userData.first_name} ${userData.last_name}`;
     document.getElementById('balance').innerText = userData.balance;
@@ -409,6 +419,7 @@ async function updateUserProfile() {
 
     const referralLink = `https://t.me/FixiCoin_Bot?start=${userId}`;
     document.getElementById('referral-link-display').value = referralLink;
+    console.log('User profile update complete');
 }
 
         function updateTicketsDisplay(tickets) {
@@ -422,17 +433,39 @@ async function updateUserProfile() {
         function updateReferralProgress(progress) {
             document.getElementById('referral-progress').innerText = progress;
         }
+        
+try {
+    app = initializeApp(firebaseConfig);
+    db = getFirestore(app);
+    console.log('Firebase initialized successfully');
+} catch (error) {
+    console.error('Error initializing Firebase:', error);
+}
 
-        async function checkFirebaseConnection() {
+async function checkFirebaseConnection() {
+    if (!db) {
+        console.error('Firestore not initialized');
+        showNotification('Error: Database not initialized');
+        return false;
+    }
+
     try {
         const testDoc = doc(db, 'test', 'testDoc');
         await setDoc(testDoc, { test: 'data' });
-        await getDoc(testDoc);
-        console.log('Firebase connection successful');
+        const docSnap = await getDoc(testDoc);
+        if (docSnap.exists()) {
+            console.log('Firebase connection successful');
+            return true;
+        } else {
+            console.error('Test document not found after writing');
+            return false;
+        }
     } catch (error) {
         console.error('Firebase connection failed:', error);
         showNotification('Error connecting to database');
+        return false;
     }
+}
 
         async function startLuckyGame() {
             const userData = await getUser(userId);
@@ -466,6 +499,21 @@ async function updateUserProfile() {
                 showNotification('You need more tickets to play the game!');
             }
         }
+        
+        async function getUser(userId) {
+    console.log('Getting user:', userId);
+    const userDoc = doc(db, 'users', userId);
+    const docSnap = await getDoc(userDoc);
+    console.log('User document exists:', docSnap.exists());
+    return docSnap.exists() ? docSnap.data() : null;
+}
+
+async function setUser(userId, userData) {
+    console.log('Setting user:', userId, userData);
+    const userDoc = doc(db, 'users', userId);
+    await setDoc(userDoc, userData);
+    console.log('User data set successfully');
+}
 
         async function confirmTask(taskId) {
             const userData = await getUser(userId);
@@ -539,10 +587,16 @@ async function updateUserProfile() {
             document.getElementById(pageId).classList.add('active');
         }
 
-        document.addEventListener('DOMContentLoaded', function() {
-    checkFirebaseConnection().then(() => {
-        updateUserProfile();
-    });
+        document.addEventListener('DOMContentLoaded', async function() {
+    console.log('DOM fully loaded and parsed');
+    const isConnected = await checkFirebaseConnection();
+    if (isConnected) {
+        console.log('Firebase connected, updating user profile');
+        await updateUserProfile();
+    } else {
+        console.error('Failed to connect to Firebase');
+        showNotification('Error: Could not connect to the database');
+    }
 
     document.getElementById('main-link').addEventListener('click', () => showPage('main-page'));
     document.getElementById('tasks-link').addEventListener('click', () => showPage('tasks-page'));
