@@ -263,8 +263,8 @@
         <div id="main-page" class="page active">
             <div class="profile-info">
                 <img id="user-avatar" src="" alt="User Avatar">
-                <span class="username" id="user-name">yarik.</span>
-                <span class="balance"><span id="balance">450</span>F</span>
+                <span class="username" id="user-name">Loading...</span>
+                <span class="balance"><span id="balance">0</span>F</span>
             </div>
             <div class="centered-container">
                 <div class="fixi-coin-title">FIXI Coin</div>
@@ -274,7 +274,7 @@
                         <button class="play-button" onclick="showPage('lucky-game-page')">
                             <i class="fas fa-play"></i>
                         </button>
-                        <div class="ticket-balance">🎫 <span id="tickets">3</span></div>
+                        <div class="ticket-balance">🎫 <span id="tickets">0</span></div>
                         <button class="get-more-button button" onclick="showPage('referral-page')">Get more</button>
                     </div>
                 </div>
@@ -331,103 +331,100 @@
         import { getFirestore, doc, getDoc, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/9.1.2/firebase-firestore.js";
 
         const firebaseConfig = {
-  apiKey: "AIzaSyBPJPlCjxCNUDiN0C1zhxWmYzY62zMjGB4",
-  authDomain: "fixi-coin.firebaseapp.com",
-  projectId: "fixi-coin",
-  storageBucket: "fixi-coin.appspot.com",
-  messagingSenderId: "979167879776",
-  appId: "1:979167879776:web:0de1f562da51f850cf9905"
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-
-// Замените URL на ваш реальный URL сервера, который предоставляет данные о пользователе
-const SERVER_URL = 'http://localhost:3000/get-telegram-user-data?userId=${userId}';
-
-async function getTelegramUserData() {
-    try {
-        const response = await fetch('http://localhost:3000/get-telegram-user-data?userId=${userId}');
-        if (!response.ok) throw new Error('Network response was not ok');
-        const data = await response.json();
-
-        return {
-            id: data.id, // Получаем ID пользователя
-            first_name: data.first_name,
-            last_name: data.last_name,
-            photo_url: data.photo_url // Получаем URL фото
+            apiKey: "AIzaSyBPJPlCjxCNUDiN0C1zhxWmYzY62zMjGB4",
+            authDomain: "fixi-coin.firebaseapp.com",
+            projectId: "fixi-coin",
+            storageBucket: "fixi-coin.appspot.com",
+            messagingSenderId: "979167879776",
+            appId: "1:979167879776:web:0de1f562da51f850cf9905"
         };
-    } catch (error) {
-        console.error('Error fetching Telegram user data:', error);
-        return {
-            id: 'unknown',
-            first_name: 'Unknown',
-            last_name: 'User',
-            photo_url: 'https://example.com/default-avatar.jpg'
-        };
-    }
-}
 
-async function getUser(userId) {
-    const userDoc = doc(db, 'users', userId);
-    const docSnap = await getDoc(userDoc);
-    return docSnap.exists() ? docSnap.data() : null;
-}
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
 
-async function setUser(userId, userData) {
-    const userDoc = doc(db, 'users', userId);
-    await setDoc(userDoc, userData);
-}
+        let userId;
 
-async function updateUserData(userId, userData) {
-    const userDoc = doc(db, 'users', userId);
-    await updateDoc(userDoc, userData);
-}
+        async function getTelegramUserData() {
+            const urlParams = new URLSearchParams(window.location.search);
+            userId = urlParams.get('id');
+            const first_name = urlParams.get('first_name');
+            const last_name = urlParams.get('last_name');
+            const photo_url = urlParams.get('photo_url');
 
-async function updateUserProfile() {
-    const telegramData = await getTelegramUserData();
-    const userId = telegramData.id;
-    
-    let userData = await getUser(userId);
-    if (!userData) {
-        userData = {
-            id: userId,
-            first_name: telegramData.first_name,
-            last_name: telegramData.last_name,
-            photo_url: telegramData.photo_url,
-            tickets: 3,
-            balance: 450,
-            referralProgress: 0,
-            taskCompleted: {1: false, 2: false}
-        };
-        await setUser(userId, userData);
-    }
+            if (!userId) {
+                console.error('User ID not found in URL parameters');
+                return null;
+            }
 
-    document.getElementById('user-avatar').src = userData.photo_url || 'path/to/default-avatar.png';
-    document.getElementById('user-name').innerText = `${userData.first_name} ${userData.last_name}`;
-    document.getElementById('balance').innerText = userData.balance;
-    updateTicketsDisplay(userData.tickets);
-    updateReferralProgress(userData.referralProgress);
+            return {
+                id: userId,
+                first_name: first_name || 'Unknown',
+                last_name: last_name || 'User',
+                photo_url: photo_url || 'https://example.com/default-avatar.jpg'
+            };
+        }
 
-    const referralLink = `https://t.me/FixiCoin_Bot?start=${userId}`;
-    document.getElementById('referral-link-display').value = referralLink;
-}
+        async function getUser(userId) {
+            const userDoc = doc(db, 'users', userId);
+            const docSnap = await getDoc(userDoc);
+            return docSnap.exists() ? docSnap.data() : null;
+        }
 
-function updateTicketsDisplay(tickets) {
-    document.getElementById('tickets').innerText = tickets;
-}
+        async function setUser(userId, userData) {
+            const userDoc = doc(db, 'users', userId);
+            await setDoc(userDoc, userData);
+        }
 
-function updateUserBalance(balance) {
-    document.getElementById('balance').innerText = balance;
-}
+        async function updateUserData(userId, userData) {
+            const userDoc = doc(db, 'users', userId);
+            await updateDoc(userDoc, userData);
+        }
 
-function updateReferralProgress(progress) {
-    document.getElementById('referral-progress').innerText = progress;
-}
-        async function startLuckyGame() {
+        async function updateUserProfile() {
             const telegramData = await getTelegramUserData();
-            const userId = telegramData.id;
+            if (!telegramData) {
+                showNotification('Failed to load user data');
+                return;
+            }
             
+            let userData = await getUser(userId);
+            if (!userData) {
+                userData = {
+                    id: userId,
+                    first_name: telegramData.first_name,
+                    last_name: telegramData.last_name,
+                    photo_url: telegramData.photo_url,
+                    tickets: 3,
+                    balance: 450,
+                    referralProgress: 0,
+                    taskCompleted: {1: false, 2: false}
+                };
+                await setUser(userId, userData);
+            }
+
+            document.getElementById('user-avatar').src = userData.photo_url;
+            document.getElementById('user-name').innerText = `${userData.first_name} ${userData.last_name}`;
+            document.getElementById('balance').innerText = userData.balance;
+            updateTicketsDisplay(userData.tickets);
+            updateReferralProgress(userData.referralProgress);
+
+            const referralLink = `https://t.me/FixiCoin_Bot?start=${userId}`;
+            document.getElementById('referral-link-display').value = referralLink;
+        }
+
+        function updateTicketsDisplay(tickets) {
+            document.getElementById('tickets').innerText = tickets;
+        }
+
+        function updateUserBalance(balance) {
+            document.getElementById('balance').innerText = balance;
+        }
+
+        function updateReferralProgress(progress) {
+            document.getElementById('referral-progress').innerText = progress;
+        }
+
+        async function startLuckyGame() {
             const userData = await getUser(userId);
             if (userData && userData.tickets >= 1) {
                 let userTickets = userData.tickets;
@@ -461,9 +458,6 @@ function updateReferralProgress(progress) {
         }
 
         async function confirmTask(taskId) {
-            const telegramData = await getTelegramUserData();
-            const userId = telegramData.id;
-
             const userData = await getUser(userId);
             if (userData && !userData.taskCompleted[taskId]) {
                 let { tickets, balance, taskCompleted } = userData;
@@ -535,35 +529,15 @@ function updateReferralProgress(progress) {
             document.getElementById(pageId).classList.add('active');
         }
 
-        function getURLParameters() {
-            const params = new URLSearchParams(window.location.search);
-            const telegramUserId = params.get('telegramUserId');
-            const username = params.get('username');
-            const avatar = params.get('avatar');
-            return { telegramUserId, username, avatar };
-        }
-
-        // Update profile information based on URL parameters
-        function updateProfileInfo() {
-            const { telegramUserId, username, avatar } = getURLParameters();
-            if (username) {
-                document.getElementById('user-name').textContent = username;
-            }
-            if (avatar) {
-                document.getElementById('user-avatar').src = avatar;
-            }
-            console.log('Telegram User ID:', telegramUserId);
-        }
-
         document.addEventListener('DOMContentLoaded', function() {
-            updateProfileInfo();
+            updateUserProfile();
 
             document.getElementById('main-link').addEventListener('click', () => showPage('main-page'));
             document.getElementById('tasks-link').addEventListener('click', () => showPage('tasks-page'));
             document.getElementById('referral-link').addEventListener('click', () => showPage('referral-page'));
         });
 
-        // Экспорт функций в глобальную область видимости
+        // Export functions to global scope
         window.showPage = showPage;
         window.startLuckyGame = startLuckyGame;
         window.confirmTask = confirmTask;
@@ -577,26 +551,5 @@ function updateReferralProgress(progress) {
             console.log('particles.js loaded');
         });
     </script>
-    
-    <script>
-      document.addEventListener('DOMContentLoaded', function() {
-        const loadEl = document.querySelector('#load');
-        try {
-          let app = firebase.app();
-          let features = [
-            'auth', 
-            'database', 
-            'firestore',
-            'functions',
-            'messaging', 
-            'storage', 
-            'analytics', 
-            'remoteConfig',
-            'performance',
-          ].filter(feature => typeof app[feature] === 'function');
-          loadEl.textContent = `Firebase SDK loaded with ${features.join(', ')}`;
-        } catch (e) {
-          console.error(e);
-          loadEl.textContent = 'Error loading the Firebase SDK, check the console.';
-        }
-      });
+</body>
+</html>
