@@ -475,7 +475,13 @@ async function checkFirebaseConnection() {
 }
 
 async function startLuckyGame() {
-    const userData = await getUser(userId);
+    if (!userId) {
+        console.error('User ID is not set');
+        showNotification('Error: User ID is not set');
+        return;
+    }
+
+    const userData = await getUser(userId); // Измените с `userId`
     if (userData && userData.tickets >= 1) {
         let userTickets = userData.tickets;
         userTickets--;
@@ -506,7 +512,6 @@ async function startLuckyGame() {
         showNotification('You need more tickets to play the game!');
     }
 }
-
         
         async function getUser(userId) {
     console.log('Getting user:', userId);
