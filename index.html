@@ -474,38 +474,39 @@ async function checkFirebaseConnection() {
     }
 }
 
-        async function startLuckyGame() {
-            const userData = await getUser(userId);
-            if (userData && userData.tickets >= 1) {
-                let userTickets = userData.tickets;
-                userTickets--;
-                updateTicketsDisplay(userTickets);
-                await updateUserData(userId, { tickets: userTickets });
+async function startLuckyGame() {
+    const userData = await getUser(userId);
+    if (userData && userData.tickets >= 1) {
+        let userTickets = userData.tickets;
+        userTickets--;
+        updateTicketsDisplay(userTickets);
+        await updateUserData(userId, { tickets: userTickets });
 
-                const ticketValues = [20, 20, 50, 50, 50, 50, 100, 100, 100, 300, 500, 1000];
-                const shuffledValues = ticketValues.sort(() => Math.random() - 0.5);
-                const ticketsContainer = document.getElementById('tickets-container');
+        const ticketValues = [20, 20, 50, 50, 50, 50, 100, 100, 100, 300, 500, 1000];
+        const shuffledValues = ticketValues.sort(() => Math.random() - 0.5);
+        const ticketsContainer = document.getElementById('tickets-container');
 
-                ticketsContainer.innerHTML = '';
+        ticketsContainer.innerHTML = '';
 
-                shuffledValues.forEach(value => {
-                    const ticket = document.createElement('div');
-                    ticket.classList.add('ticket');
-                    ticket.innerHTML = '🎫';
-                    ticket.onclick = function() {
-                        if (!ticket.classList.contains('revealed')) {
-                            ticket.classList.add('revealed');
-                            showPrize(value);
-                            updateUserBalance(userData.balance + value);
-                            updateUserData(userId, { balance: userData.balance + value });
-                        }
-                    };
-                    ticketsContainer.appendChild(ticket);
-                });
-            } else {
-                showNotification('You need more tickets to play the game!');
-            }
-        }
+        shuffledValues.forEach(value => {
+            const ticket = document.createElement('div');
+            ticket.classList.add('ticket');
+            ticket.innerHTML = '🎫';
+            ticket.onclick = function() {
+                if (!ticket.classList.contains('revealed')) {
+                    ticket.classList.add('revealed');
+                    showPrize(value);
+                    updateUserBalance(userData.balance + value);
+                    updateUserData(userId, { balance: userData.balance + value });
+                }
+            };
+            ticketsContainer.appendChild(ticket);
+        });
+    } else {
+        showNotification('You need more tickets to play the game!');
+    }
+}
+
         
         async function getUser(userId) {
     console.log('Getting user:', userId);
