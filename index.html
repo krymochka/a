@@ -353,7 +353,7 @@ try {
 async function getTelegramUserData() {
     console.log('Getting Telegram user data');
     const urlParams = new URLSearchParams(window.location.search);
-    userId = urlParams.get('user_id'); // Изменено с 'id' на 'user_id'
+    const userId = urlParams.get('user_id');
     const username = urlParams.get('username');
     const photo_url = urlParams.get('photo_url');
 
@@ -361,7 +361,11 @@ async function getTelegramUserData() {
 
     if (!userId) {
         console.warn('User ID not found in URL parameters, generating temporary ID');
-        userId = 'temp_' + Math.random().toString(36).substr(2, 9);
+        return {
+            id: 'temp_' + Math.random().toString(36).substr(2, 9),
+            username: username || 'Guest',
+            photo_url: photo_url || 'https://example.com/default-avatar.jpg'
+        };
     }
 
     return {
@@ -425,17 +429,17 @@ async function updateUserProfile() {
     console.log('User profile update complete');
 }
 
-        function updateTicketsDisplay(tickets) {
-            document.getElementById('tickets').innerText = tickets;
-        }
+function updateTicketsDisplay(tickets) {
+    document.getElementById('tickets').innerText = tickets;
+}
 
-        function updateUserBalance(balance) {
-            document.getElementById('balance').innerText = balance;
-        }
+function updateUserBalance(balance) {
+    document.getElementById('balance').innerText = balance;
+}
 
-        function updateReferralProgress(progress) {
-            document.getElementById('referral-progress').innerText = progress;
-        }
+function updateReferralProgress(progress) {
+    document.getElementById('referral-progress').innerText = progress;
+}
         
 try {
     app = initializeApp(firebaseConfig);
@@ -516,6 +520,12 @@ async function setUser(userId, userData) {
     const userDoc = doc(db, 'users', userId);
     await setDoc(userDoc, userData);
     console.log('User data set successfully');
+}
+
+async function updateUserData(userId, updateData) {
+    const userDoc = doc(db, 'users', userId);
+    await updateDoc(userDoc, updateData);
+    console.log('User data updated successfully');
 }
 
         async function confirmTask(taskId) {
