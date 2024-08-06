@@ -366,7 +366,9 @@
 }
 
 async function updateUserProfile() {
+    console.log('Starting updateUserProfile');
     const telegramData = await getTelegramUserData();
+    console.log('Telegram data:', telegramData);
     if (!telegramData) {
         showNotification('Failed to load user data');
         return;
@@ -562,4 +564,4 @@ async function updateUserProfile() {
         });
     </script>
     </body>
-</html>
+    <html>
