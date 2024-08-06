@@ -354,7 +354,7 @@ try {
 async function getTelegramUserData() {
     console.log('Getting Telegram user data');
     const urlParams = new URLSearchParams(window.location.search);
-    const userId = urlParams.get('user_id');
+    userId = urlParams.get('user_id'); // Устанавливаем глобальный userId
     const username = urlParams.get('username');
     const photo_url = urlParams.get('photo_url');
 
@@ -387,10 +387,11 @@ async function updateUserProfile() {
         return;
     }
     
+    userId = telegramData.id; // Устанавливаем userId после получения данных
     let userData;
     try {
         console.log('Fetching user data from Firestore');
-        userData = await getUser(telegramData.id);
+        userData = await getUser(userId);
         console.log('User data from Firestore:', userData);
     } catch (error) {
         console.error('Error fetching user data:', error);
@@ -399,7 +400,7 @@ async function updateUserProfile() {
     if (!userData) {
         console.log('User not found in Firestore, creating new user');
         userData = {
-            id: telegramData.id,
+            id: userId,
             username: telegramData.username,
             photo_url: telegramData.photo_url,
             tickets: 3,
@@ -409,7 +410,7 @@ async function updateUserProfile() {
         };
         try {
             console.log('Setting new user data in Firestore');
-            await setUser(telegramData.id, userData);
+            await setUser(userId, userData);
             console.log('New user data set successfully');
         } catch (error) {
             console.error('Error setting new user data:', error);
