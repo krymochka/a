@@ -339,20 +339,25 @@
             appId: "1:979167879776:web:0de1f562da51f850cf9905"
         };
 
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
+        let app;
+let db;
 
-        let userId;
+try {
+    app = initializeApp(firebaseConfig);
+    db = getFirestore(app);
+    console.log('Firebase initialized successfully');
+} catch (error) {
+    console.error('Error initializing Firebase:', error);
+}
 
-        async function getTelegramUserData() {
+async function getTelegramUserData() {
     console.log('Getting Telegram user data');
     const urlParams = new URLSearchParams(window.location.search);
-    userId = urlParams.get('id');
-    const first_name = urlParams.get('first_name');
-    const last_name = urlParams.get('last_name');
+    userId = urlParams.get('user_id'); // Изменено с 'id' на 'user_id'
+    const username = urlParams.get('username');
     const photo_url = urlParams.get('photo_url');
 
-    console.log('URL parameters:', { userId, first_name, last_name, photo_url });
+    console.log('URL parameters:', { userId, username, photo_url });
 
     if (!userId) {
         console.warn('User ID not found in URL parameters, generating temporary ID');
@@ -361,8 +366,7 @@
 
     return {
         id: userId,
-        first_name: first_name || 'Guest',
-        last_name: last_name || 'User',
+        username: username || 'Guest',
         photo_url: photo_url || 'https://example.com/default-avatar.jpg'
     };
 }
@@ -381,7 +385,7 @@ async function updateUserProfile() {
     let userData;
     try {
         console.log('Fetching user data from Firestore');
-        userData = await getUser(userId);
+        userData = await getUser(telegramData.id);
         console.log('User data from Firestore:', userData);
     } catch (error) {
         console.error('Error fetching user data:', error);
@@ -390,9 +394,8 @@ async function updateUserProfile() {
     if (!userData) {
         console.log('User not found in Firestore, creating new user');
         userData = {
-            id: userId,
-            first_name: telegramData.first_name,
-            last_name: telegramData.last_name,
+            id: telegramData.id,
+            username: telegramData.username,
             photo_url: telegramData.photo_url,
             tickets: 3,
             balance: 450,
@@ -401,7 +404,7 @@ async function updateUserProfile() {
         };
         try {
             console.log('Setting new user data in Firestore');
-            await setUser(userId, userData);
+            await setUser(telegramData.id, userData);
             console.log('New user data set successfully');
         } catch (error) {
             console.error('Error setting new user data:', error);
@@ -412,12 +415,12 @@ async function updateUserProfile() {
 
     console.log('Updating UI with user data');
     document.getElementById('user-avatar').src = userData.photo_url;
-    document.getElementById('user-name').innerText = `${userData.first_name} ${userData.last_name}`;
+    document.getElementById('user-name').innerText = userData.username;
     document.getElementById('balance').innerText = userData.balance;
     updateTicketsDisplay(userData.tickets);
     updateReferralProgress(userData.referralProgress);
 
-    const referralLink = `https://t.me/FixiCoin_Bot?start=${userId}`;
+    const referralLink = `https://t.me/FixiCoin_Bot?start=${userData.id}`;
     document.getElementById('referral-link-display').value = referralLink;
     console.log('User profile update complete');
 }
