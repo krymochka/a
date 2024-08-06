@@ -535,8 +535,28 @@ function updateReferralProgress(progress) {
             document.getElementById(pageId).classList.add('active');
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
-            updateUserProfile();
+        function getURLParameters() {
+            const params = new URLSearchParams(window.location.search);
+            const telegramUserId = params.get('telegramUserId');
+            const username = params.get('username');
+            const avatar = params.get('avatar');
+            return { telegramUserId, username, avatar };
+        }
+
+        // Update profile information based on URL parameters
+        function updateProfileInfo() {
+            const { telegramUserId, username, avatar } = getURLParameters();
+            if (username) {
+                document.getElementById('user-name').textContent = username;
+            }
+            if (avatar) {
+                document.getElementById('user-avatar').src = avatar;
+            }
+            console.log('Telegram User ID:', telegramUserId);
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            updateProfileInfo();
 
             document.getElementById('main-link').addEventListener('click', () => showPage('main-page'));
             document.getElementById('tasks-link').addEventListener('click', () => showPage('tasks-page'));
