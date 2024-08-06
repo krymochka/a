@@ -339,308 +339,224 @@
             appId: "1:979167879776:web:0de1f562da51f850cf9905"
         };
 
-        let app;
-let db;
-let userId = null; // Добавьте это
+        let app = initializeApp(firebaseConfig);
+        let db = getFirestore(app);
+        let userId = null;
 
-try {
-    app = initializeApp(firebaseConfig);
-    db = getFirestore(app);
-    console.log('Firebase initialized successfully');
-} catch (error) {
-    console.error('Error initializing Firebase:', error);
-}
+        async function getTelegramUserData() {
+            const urlParams = new URLSearchParams(window.location.search);
+            userId = urlParams.get('user_id');
+            const username = urlParams.get('username');
+            const photo_url = urlParams.get('photo_url');
 
-async function getTelegramUserData() {
-    console.log('Getting Telegram user data');
-    const urlParams = new URLSearchParams(window.location.search);
-    userId = urlParams.get('user_id'); // Устанавливаем глобальный userId
-    const username = urlParams.get('username');
-    const photo_url = urlParams.get('photo_url');
-
-    console.log('URL parameters:', { userId, username, photo_url });
-
-    if (!userId) {
-        console.warn('User ID not found in URL parameters, generating temporary ID');
-        return {
-            id: 'temp_' + Math.random().toString(36).substr(2, 9),
-            username: username || 'Guest',
-            photo_url: photo_url || 'https://example.com/default-avatar.jpg'
-        };
-    }
-
-    return {
-        id: userId,
-        username: username || 'Guest',
-        photo_url: photo_url || 'https://example.com/default-avatar.jpg'
-    };
-}
-
-async function updateUserProfile() {
-    console.log('Updating user profile');
-    const telegramData = await getTelegramUserData();
-    console.log('Telegram data:', telegramData);
-
-    if (!telegramData) {
-        console.error('Failed to load user data');
-        showNotification('Failed to load user data');
-        return;
-    }
-    
-    userId = telegramData.id; // Устанавливаем userId после получения данных
-    let userData;
-    try {
-        console.log('Fetching user data from Firestore');
-        userData = await getUser(userId);
-        console.log('User data from Firestore:', userData);
-    } catch (error) {
-        console.error('Error fetching user data:', error);
-    }
-
-    if (!userData) {
-        console.log('User not found in Firestore, creating new user');
-        userData = {
-            id: userId,
-            username: telegramData.username,
-            photo_url: telegramData.photo_url,
-            tickets: 3,
-            balance: 450,
-            referralProgress: 0,
-            taskCompleted: {1: false, 2: false}
-        };
-        try {
-            console.log('Setting new user data in Firestore');
-            await setUser(userId, userData);
-            console.log('New user data set successfully');
-        } catch (error) {
-            console.error('Error setting new user data:', error);
-            showNotification('Error creating user profile');
-            return;
-        }
-    }
-
-    console.log('Updating UI with user data');
-    document.getElementById('user-avatar').src = userData.photo_url;
-    document.getElementById('user-name').innerText = userData.username;
-    document.getElementById('balance').innerText = userData.balance;
-    updateTicketsDisplay(userData.tickets);
-    updateReferralProgress(userData.referralProgress);
-
-    const referralLink = `https://t.me/FixiCoin_Bot?start=${userData.id}`;
-    document.getElementById('referral-link-display').value = referralLink;
-    console.log('User profile update complete');
-}
-
-function updateTicketsDisplay(tickets) {
-    document.getElementById('tickets').innerText = tickets;
-}
-
-function updateUserBalance(balance) {
-    document.getElementById('balance').innerText = balance;
-}
-
-function updateReferralProgress(progress) {
-    document.getElementById('referral-progress').innerText = progress;
-}
-        
-try {
-    app = initializeApp(firebaseConfig);
-    db = getFirestore(app);
-    console.log('Firebase initialized successfully');
-} catch (error) {
-    console.error('Error initializing Firebase:', error);
-}
-
-async function checkFirebaseConnection() {
-    if (!db) {
-        console.error('Firestore not initialized');
-        showNotification('Error: Database not initialized');
-        return false;
-    }
-
-    try {
-        const testDoc = doc(db, 'test', 'testDoc');
-        await setDoc(testDoc, { test: 'data' });
-        const docSnap = await getDoc(testDoc);
-        if (docSnap.exists()) {
-            console.log('Firebase connection successful');
-            return true;
-        } else {
-            console.error('Test document not found after writing');
-            return false;
-        }
-    } catch (error) {
-        console.error('Firebase connection failed:', error);
-        showNotification('Error connecting to database');
-        return false;
-    }
-}
-
-async function updateReferralProgress(progress) {
-    document.getElementById('referral-progress').innerText = progress;
-    const referralList = document.getElementById('referral-list');
-    referralList.innerHTML = ''; // Очистите список
-
-    getUser(userId).then(userData => {
-        if (userData && userData.referrals) {
-            userData.referrals.forEach(referral => {
-                const listItem = document.createElement('li');
-                listItem.innerText = referral.username; // Предполагается, что у referral есть свойство username
-                referralList.appendChild(listItem);
-            });
-        }
-    });
-}
-
-async function updateReferralData() {
-    getUser(userId).then(userData => {
-        if (userData && userData.referrals) {
-            const referralCount = userData.referrals.length;
-            const progress = Math.min(referralCount, 5); // Максимум 5 рефералов для прогресса
-            updateUserData(userId, { referralProgress: progress }).then(() => {
-                updateReferralProgress(progress);
-            });
-        }
-    });
-}
-
-async function startLuckyGame() {
-    if (!userId) {
-        console.error('User ID is not set');
-        showNotification('Error: User ID is not set');
-        return;
-    }
-
-    const userData = await getUser(userId); // Измените с `userId`
-    if (userData && userData.tickets >= 1) {
-        let userTickets = userData.tickets;
-        userTickets--;
-        updateTicketsDisplay(userTickets);
-        await updateUserData(userId, { tickets: userTickets });
-
-        const ticketValues = [20, 20, 50, 50, 50, 50, 100, 100, 100, 300, 500, 1000];
-        const shuffledValues = ticketValues.sort(() => Math.random() - 0.5);
-        const ticketsContainer = document.getElementById('tickets-container');
-
-        ticketsContainer.innerHTML = '';
-
-        shuffledValues.forEach(value => {
-            const ticket = document.createElement('div');
-            ticket.classList.add('ticket');
-            ticket.innerHTML = '🎫';
-            ticket.onclick = function() {
-                if (!ticket.classList.contains('revealed')) {
-                    ticket.classList.add('revealed');
-                    showPrize(value);
-                    updateUserBalance(userData.balance + value);
-                    updateUserData(userId, { balance: userData.balance + value });
-                }
+            return {
+                id: userId || 'temp_' + Math.random().toString(36).substr(2, 9),
+                username: username || 'Guest',
+                photo_url: photo_url || 'https://example.com/default-avatar.jpg'
             };
-            ticketsContainer.appendChild(ticket);
-        });
-    } else {
-        showNotification('You need more tickets to play the game!');
-    }
-}
-        
-        async function getUser(userId) {
-    console.log('Getting user:', userId);
-    const userDoc = doc(db, 'users', userId);
-    const docSnap = await getDoc(userDoc);
-    console.log('User document exists:', docSnap.exists());
-    return docSnap.exists() ? docSnap.data() : null;
-}
-
-async function setUser(userId, userData) {
-    console.log('Setting user:', userId, userData);
-    const userDoc = doc(db, 'users', userId);
-    await setDoc(userDoc, userData);
-    console.log('User data set successfully');
-}
-
-async function updateUserData(userId, updateData) {
-    const userDoc = doc(db, 'users', userId);
-    await updateDoc(userDoc, updateData);
-    console.log('User data updated successfully');
-}
-
-async function confirmTask(taskId) {
-    getUser(userId).then(userData => {
-        if (userData && !userData.taskCompleted[taskId]) {
-            let { tickets, balance, taskCompleted, referrals } = userData;
-
-            const taskElement = document.getElementById(`task${taskId}`);
-            const btnConfirm = taskElement.querySelector('.btn-confirm');
-            btnConfirm.disabled = true;
-            btnConfirm.innerText = 'Confirmed!';
-
-            setTimeout(() => {
-                let coinsEarned;
-                switch (taskId) {
-                    case 1:
-                        coinsEarned = 300;
-                        tickets += 1;
-                        break;
-                    case 2:
-                        coinsEarned = 1000;
-                        tickets += 5;
-                        break;
-                }
-                balance += coinsEarned;
-                taskCompleted[taskId] = true;
-
-                // Если задача 2, проверьте количество рефералов
-                if (taskId === 2 && referrals.length < 5) {
-                    showNotification('You need to invite 5 friends to complete this task!');
-                    btnConfirm.disabled = false;
-                    btnConfirm.innerText = 'Confirm';
-                    return;
-                }
-
-                updateUserData(userId, { tickets, balance, taskCompleted }).then(() => {
-                    updateTicketsDisplay(tickets);
-                    updateUserBalance(balance);
-                    showNotification(`Task completed! You earned ${coinsEarned} coins and tickets.`);
-                });
-            }, 3000);
-        } else {
-            showNotification('This task is already completed or user data not found!');
         }
-    });
-}
 
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('DOM fully loaded and parsed');
-    checkFirebaseConnection().then(isConnected => {
-        if (isConnected) {
-            console.log('Firebase connected, updating user profile');
-            updateUserProfile().then(() => {
-                updateReferralData(); // Обновите рефералов при загрузке страницы
+        async function updateUserProfile() {
+            const telegramData = await getTelegramUserData();
+            userId = telegramData.id;
+            let userData = await getUser(userId);
+
+            if (!userData) {
+                userData = {
+                    id: userId,
+                    username: telegramData.username,
+                    photo_url: telegramData.photo_url,
+                    tickets: 3,
+                    balance: 450,
+                    referralProgress: 0,
+                    taskCompleted: {1: false, 2: false}
+                };
+                await setUser(userId, userData);
+            }
+
+            document.getElementById('user-avatar').src = userData.photo_url;
+            document.getElementById('user-name').innerText = userData.username;
+            document.getElementById('balance').innerText = userData.balance;
+            updateTicketsDisplay(userData.tickets);
+            updateReferralProgress(userData.referralProgress);
+
+            const referralLink = `https://t.me/FixiCoin_Bot?start=${userData.id}`;
+            document.getElementById('referral-link-display').value = referralLink;
+        }
+
+        function updateTicketsDisplay(tickets) {
+            document.getElementById('tickets').innerText = tickets;
+        }
+
+        function updateReferralProgress(progress) {
+            document.getElementById('referral-progress').innerText = progress;
+            const referralList = document.getElementById('referral-list');
+            referralList.innerHTML = '';
+
+            getUser(userId).then(userData => {
+                if (userData && userData.referrals) {
+                    userData.referrals.forEach(referral => {
+                        const listItem = document.createElement('li');
+                        listItem.innerText = referral.username;
+                        referralList.appendChild(listItem);
+                    });
+                }
             });
-        } else {
-            console.error('Failed to connect to Firebase');
-            showNotification('Error: Could not connect to the database');
         }
-    });
 
-    document.getElementById('main-link').addEventListener('click', () => showPage('main-page'));
-    document.getElementById('tasks-link').addEventListener('click', () => showPage('tasks-page'));
-    document.getElementById('referral-link').addEventListener('click', () => showPage('referral-page'));
-});
+        async function startLuckyGame() {
+            if (!userId) return;
 
-        // Export functions to global scope
-        window.showPage = showPage;
-        window.startLuckyGame = startLuckyGame;
-        window.confirmTask = confirmTask;
-        window.copyReferralLink = copyReferralLink;
-        window.sendReferralLink = sendReferralLink;
-    </script>
+            const userData = await getUser(userId);
+            if (userData && userData.tickets >= 1) {
+                let userTickets = userData.tickets;
+                userTickets--;
+                updateTicketsDisplay(userTickets);
+                await updateUserData(userId, { tickets: userTickets });
 
-    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
-    <script>
-        particlesJS.load('particles-js', 'particles.json', function() {
-            console.log('particles.js loaded');
+                const ticketValues = [20, 20, 50, 50, 50, 50, 100, 100, 100, 300, 500, 1000];
+                const shuffledValues = ticketValues.sort(() => Math.random() - 0.5);
+                const ticketsContainer = document.getElementById('tickets-container');
+                ticketsContainer.innerHTML = '';
+
+                shuffledValues.forEach(value => {
+                    const ticket = document.createElement('div');
+                    ticket.classList.add('ticket');
+                    ticket.innerHTML = '🎫';
+                    ticket.onclick = function() {
+                        if (!ticket.classList.contains('revealed')) {
+                            ticket.classList.add('revealed');
+                            showPrize(value);
+                            updateUserBalance(userData.balance + value);
+                            updateUserData(userId, { balance: userData.balance + value });
+                        }
+                    };
+                    ticketsContainer.appendChild(ticket);
+                });
+            } else {
+                showNotification('You need more tickets to play the game!');
+            }
+        }
+
+        async function getUser(userId) {
+            const userDoc = doc(db, 'users', userId);
+            const docSnap = await getDoc(userDoc);
+            return docSnap.exists() ? docSnap.data() : null;
+        }
+
+        async function setUser(userId, userData) {
+            const userDoc = doc(db, 'users', userId);
+            await setDoc(userDoc, userData);
+        }
+
+        async function updateUserData(userId, updateData) {
+            const userDoc = doc(db, 'users', userId);
+            await updateDoc(userDoc, updateData);
+        }
+
+        async function confirmTask(taskId) {
+            getUser(userId).then(userData => {
+                if (userData && !userData.taskCompleted[taskId]) {
+                    let { tickets, balance, taskCompleted, referrals } = userData;
+
+                    const taskElement = document.getElementById(`task${taskId}`);
+                    const btnConfirm = taskElement.querySelector('.btn-confirm');
+                    btnConfirm.disabled = true;
+                    btnConfirm.innerText = 'Confirmed!';
+
+                    setTimeout(() => {
+                        let coinsEarned;
+                        switch (taskId) {
+                            case 1:
+                                coinsEarned = 300;
+                                tickets += 1;
+                                break;
+                            case 2:
+                                coinsEarned = 1000;
+                                tickets += 5;
+                                break;
+                        }
+                        balance += coinsEarned;
+                        taskCompleted[taskId] = true;
+
+                        if (taskId === 2 && referrals.length < 5) {
+                            showNotification('You need to invite 5 friends to complete this task!');
+                            btnConfirm.disabled = false;
+                            btnConfirm.innerText = 'Confirm';
+                            return;
+                        }
+
+                        updateUserData(userId, { tickets, balance, taskCompleted }).then(() => {
+                            updateTicketsDisplay(tickets);
+                            updateUserBalance(balance);
+                            showNotification(`Task completed! You earned ${coinsEarned} coins and tickets.`);
+                        });
+                    }, 3000);
+                } else {
+                    showNotification('This task is already completed or user data not found!');
+                }
+            });
+        }
+
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.remove('active');
+            });
+            document.getElementById(pageId).classList.add('active');
+        }
+
+        function showNotification(message) {
+            const notification = document.getElementById('notification');
+            notification.innerText = message;
+            notification.style.display = 'block';
+            setTimeout(() => {
+                notification.style.display = 'none';
+            }, 3000);
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            checkFirebaseConnection().then(isConnected => {
+                if (isConnected) {
+                    updateUserProfile().then(() => {
+                        updateReferralData();
+                    });
+                } else {
+                    showNotification('Error: Could not connect to the database');
+                }
+            });
+
+            document.getElementById('main-link').addEventListener('click', () => showPage('main-page'));
+            document.getElementById('tasks-link').addEventListener('click', () => showPage('tasks-page'));
+            document.getElementById('profile-link').addEventListener('click', () => showPage('profile-page'));
+            document.getElementById('play-lucky-game').addEventListener('click', startLuckyGame);
+
+            document.querySelectorAll('.confirm-task').forEach(button => {
+                button.addEventListener('click', () => {
+                    const taskId = parseInt(button.getAttribute('data-task-id'), 10);
+                    confirmTask(taskId);
+                });
+            });
         });
+
+        async function checkFirebaseConnection() {
+            try {
+                const userDoc = doc(db, 'users', 'test');
+                await getDoc(userDoc);
+                return true;
+            } catch (error) {
+                return false;
+            }
+        }
+
+        async function updateReferralData() {
+            const userDoc = doc(db, 'users', userId);
+            const docSnap = await getDoc(userDoc);
+            if (docSnap.exists()) {
+                const userData = docSnap.data();
+                updateReferralProgress(userData.referralProgress);
+            }
+        }
+
     </script>
-    </body>
-    <html>
+</body>
+</html>
