@@ -481,24 +481,27 @@ async function updateReferralProgress(progress) {
     const referralList = document.getElementById('referral-list');
     referralList.innerHTML = ''; // Очистите список
 
-    const userData = await getUser(userId);
-    if (userData && userData.referrals) {
-        userData.referrals.forEach(referral => {
-            const listItem = document.createElement('li');
-            listItem.innerText = referral.username; // Предполагается, что у referral есть свойство username
-            referralList.appendChild(listItem);
-        });
-    }
+    getUser(userId).then(userData => {
+        if (userData && userData.referrals) {
+            userData.referrals.forEach(referral => {
+                const listItem = document.createElement('li');
+                listItem.innerText = referral.username; // Предполагается, что у referral есть свойство username
+                referralList.appendChild(listItem);
+            });
+        }
+    });
 }
 
 async function updateReferralData() {
-    const userData = await getUser(userId);
-    if (userData && userData.referrals) {
-        const referralCount = userData.referrals.length;
-        const progress = Math.min(referralCount, 5); // Максимум 5 рефералов для прогресса
-        await updateUserData(userId, { referralProgress: progress });
-        updateReferralProgress(progress);
-    }
+    getUser(userId).then(userData => {
+        if (userData && userData.referrals) {
+            const referralCount = userData.referrals.length;
+            const progress = Math.min(referralCount, 5); // Максимум 5 рефералов для прогресса
+            updateUserData(userId, { referralProgress: progress }).then(() => {
+                updateReferralProgress(progress);
+            });
+        }
+    });
 }
 
 async function startLuckyGame() {
@@ -562,112 +565,67 @@ async function updateUserData(userId, updateData) {
 }
 
 async function confirmTask(taskId) {
-    const userData = await getUser(userId);
-    if (userData && !userData.taskCompleted[taskId]) {
-        let { tickets, balance, taskCompleted, referrals } = userData;
+    getUser(userId).then(userData => {
+        if (userData && !userData.taskCompleted[taskId]) {
+            let { tickets, balance, taskCompleted, referrals } = userData;
 
-        const taskElement = document.getElementById(`task${taskId}`);
-        const btnConfirm = taskElement.querySelector('.btn-confirm');
-        btnConfirm.disabled = true;
-        btnConfirm.innerText = 'Confirmed!';
+            const taskElement = document.getElementById(`task${taskId}`);
+            const btnConfirm = taskElement.querySelector('.btn-confirm');
+            btnConfirm.disabled = true;
+            btnConfirm.innerText = 'Confirmed!';
 
-        setTimeout(async () => {
-            let coinsEarned;
-            switch (taskId) {
-                case 1:
-                    coinsEarned = 300;
-                    tickets += 1;
-                    break;
-                case 2:
-                    coinsEarned = 1000;
-                    tickets += 5;
-                    break;
-            }
-            balance += coinsEarned;
-            taskCompleted[taskId] = true;
+            setTimeout(() => {
+                let coinsEarned;
+                switch (taskId) {
+                    case 1:
+                        coinsEarned = 300;
+                        tickets += 1;
+                        break;
+                    case 2:
+                        coinsEarned = 1000;
+                        tickets += 5;
+                        break;
+                }
+                balance += coinsEarned;
+                taskCompleted[taskId] = true;
 
-            // Если задача 2, проверьте количество рефералов
-            if (taskId === 2 && referrals.length < 5) {
-                showNotification('You need to invite 5 friends to complete this task!');
-                btnConfirm.disabled = false;
-                btnConfirm.innerText = 'Confirm';
-                return;
-            }
+                // Если задача 2, проверьте количество рефералов
+                if (taskId === 2 && referrals.length < 5) {
+                    showNotification('You need to invite 5 friends to complete this task!');
+                    btnConfirm.disabled = false;
+                    btnConfirm.innerText = 'Confirm';
+                    return;
+                }
 
-            await updateUserData(userId, { tickets, balance, taskCompleted });
-            updateTicketsDisplay(tickets);
-            updateUserBalance(balance);
-            showNotification(`Task completed! You earned ${coinsEarned} coins and tickets.`);
-        }, 3000);
-    } else {
-        showNotification('This task is already completed or user data not found!');
-    }
+                updateUserData(userId, { tickets, balance, taskCompleted }).then(() => {
+                    updateTicketsDisplay(tickets);
+                    updateUserBalance(balance);
+                    showNotification(`Task completed! You earned ${coinsEarned} coins and tickets.`);
+                });
+            }, 3000);
+        } else {
+            showNotification('This task is already completed or user data not found!');
+        }
+    });
 }
 
-document.addEventListener('DOMContentLoaded', async function() {
+document.addEventListener('DOMContentLoaded', function() {
     console.log('DOM fully loaded and parsed');
-    const isConnected = await checkFirebaseConnection();
-    if (isConnected) {
-        console.log('Firebase connected, updating user profile');
-        await updateUserProfile();
-        await updateReferralData(); // Обновите рефералов при загрузке страницы
-    } else {
-        console.error('Failed to connect to Firebase');
-        showNotification('Error: Could not connect to the database');
-    }
+    checkFirebaseConnection().then(isConnected => {
+        if (isConnected) {
+            console.log('Firebase connected, updating user profile');
+            updateUserProfile().then(() => {
+                updateReferralData(); // Обновите рефералов при загрузке страницы
+            });
+        } else {
+            console.error('Failed to connect to Firebase');
+            showNotification('Error: Could not connect to the database');
+        }
+    });
 
     document.getElementById('main-link').addEventListener('click', () => showPage('main-page'));
     document.getElementById('tasks-link').addEventListener('click', () => showPage('tasks-page'));
     document.getElementById('referral-link').addEventListener('click', () => showPage('referral-page'));
-});
-        function copyReferralLink() {
-            const referralLinkInput = document.getElementById('referral-link-display');
-            referralLinkInput.select();
-            document.execCommand('copy');
-            showNotification('Referral link copied to clipboard');
-        }
-
-        function sendReferralLink() {
-            const referralLink = document.getElementById('referral-link-display').value;
-            const telegramUrl = `https://t.me/share/url?url=${encodeURIComponent(referralLink)}`;
-            window.open(telegramUrl, '_blank');
-        }
-
-        function showNotification(message) {
-            const notification = document.getElementById('notification');
-            notification.innerText = message;
-            notification.style.display = 'block';
-            setTimeout(() => {
-                notification.style.display = 'none';
-            }, 3000);
-        }
-
-        function showPrize(prize) {
-            const prizeDisplay = document.getElementById('prize-display');
-            prizeDisplay.innerText = prize;
-            prizeDisplay.classList.add('show');
-            setTimeout(() => {
-                prizeDisplay.classList.remove('show');
-            }, 2000);
-        }
-
-        function showPage(pageId) {
-            const pages = document.querySelectorAll('.page');
-            pages.forEach(page => page.classList.remove('active'));
-            document.getElementById(pageId).classList.add('active');
-        }
-
-        document.addEventListener('DOMContentLoaded', async function() {
-    console.log('DOM fully loaded and parsed');
-    const isConnected = await checkFirebaseConnection();
-    if (isConnected) {
-        console.log('Firebase connected, updating user profile');
-        await updateUserProfile();
-    } else {
-        console.error('Failed to connect to Firebase');
-        showNotification('Error: Could not connect to the database');
-    }
-
 });
 
         // Export functions to global scope
