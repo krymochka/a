@@ -365,9 +365,11 @@ async function registerUser(referrerId) {
                     // Начисляем рефереру 1 тикет для Lucky-game и 100 монет  
                     referrerData.tickets += 1;  
                     referrerData.balance += 100;  
-                    // Обновляем реферальный прогресс рефереру  
                     referrerData.referralProgress += 1;  
                     await updateUserData(referrerId, referrerData);  
+                } else {  
+                    showNotification('Referrer data not found!');  
+                    return false;  
                 }  
             }  
 
@@ -376,7 +378,7 @@ async function registerUser(referrerId) {
                 tickets,  
                 balance: newBalance,  
                 taskCompleted: [false, false],  
-                referralProgress: newReferralProgress  
+                referralProgress: newReferralProgress + 1  
             };  
 
             await createUser(newUserData);  
@@ -392,7 +394,6 @@ async function registerUser(referrerId) {
         return false;  
     }  
 }  
-
 
 async function getTelegramUserData() {
     console.log('Getting Telegram user data');
