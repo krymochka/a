@@ -466,23 +466,22 @@ async function handleReferral() {
 
         if (referrerSnap.exists()) {
             const referrerData = referrerSnap.data();
+            console.log('Referrer data:', referrerData);
+
             const newReferralList = referrerData.referrals || [];
 
             if (!newReferralList.includes(userId)) {
                 newReferralList.push(userId);
 
-                // Начисляем бонусы
-                const bonusCoins = 100;
-                const bonusTickets = 1;
-
-                // Обновляем данные пригласившего пользователя
+                // Обновляем данные реферера, увеличивая количество тикетов и коинов
                 await updateUserData(referrerId, {
                     referrals: newReferralList,
-                    balance: referrerData.balance + bonusCoins,
-                    tickets: referrerData.tickets + bonusTickets
+                    balance: referrerData.balance + 100, // Добавляем коины
+                    tickets: referrerData.tickets + 1    // Добавляем тикеты
                 });
+                console.log('Referrer data updated successfully');
 
-                showNotification(`Congratulations! You have been credited ${bonusCoins} coins and ${bonusTickets} tickets for inviting a friend!`);
+                showNotification(`Congratulations! You have been credited with coins and tickets for inviting a friend!`);
             } else {
                 showNotification('You have already been credited for this referral.');
             }
@@ -493,6 +492,7 @@ async function handleReferral() {
         console.log('No referrer ID found');
     }
 }
+
 
 async function updateReferralList() {
     const userData = await getUser(userId);
