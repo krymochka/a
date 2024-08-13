@@ -351,6 +351,49 @@ try {
     console.error('Error initializing Firebase:', error);
 }
 
+async function registerUser(referrerId) {  
+    try {  
+        const userData = await getUser(userId);  
+        if (userData) {  
+            const { tickets, balance, referralProgress } = userData;  
+            let newBalance = balance;  
+            let newReferralProgress = referralProgress;  
+
+            if (referrerId) {  
+                const referrerData = await getUser(referrerId);  
+                if (referrerData) {  
+                    // Начисляем рефереру 1 тикет для Lucky-game и 100 монет  
+                    referrerData.tickets += 1;  
+                    referrerData.balance += 100;  
+                    // Обновляем реферальный прогресс рефереру  
+                    referrerData.referralProgress += 1;  
+                    await updateUserData(referrerId, referrerData);  
+                }  
+            }  
+
+            const newUserData = {  
+                userId,  
+                tickets,  
+                balance: newBalance,  
+                taskCompleted: [false, false],  
+                referralProgress: newReferralProgress  
+            };  
+
+            await createUser(newUserData);  
+            showNotification('Registration successful!');  
+            return true;  
+        } else {  
+            showNotification('User data not found!');  
+            return false;  
+        }  
+    } catch (error) {  
+        console.error('Error registering user:', error);  
+        showNotification('Error registering user!');  
+        return false;  
+    }  
+}  
+
+
 async function getTelegramUserData() {
     console.log('Getting Telegram user data');
     const urlParams = new URLSearchParams(window.location.search);
