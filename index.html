@@ -406,6 +406,7 @@ async function updateUserProfile() {
             tickets: 3,
             balance: 450,
             referralProgress: 0,
+            referrals: [],
             taskCompleted: {1: false, 2: false}
         };
         try {
@@ -452,34 +453,46 @@ try {
 }
 
 async function handleReferral() {
+    console.log('Handling referral');
     const urlParams = new URLSearchParams(window.location.search);
     const referrerId = urlParams.get('start'); // Получаем ID пригласившего пользователя
-    
+
     if (referrerId) {
-        // Обновляем рефералы пользователя
+        console.log(`Referrer ID: ${referrerId}`);
+        const userData = await getUser(userId); // Получаем данные текущего пользователя
+
         const referrerDoc = doc(db, 'users', referrerId);
         const referrerSnap = await getDoc(referrerDoc);
 
         if (referrerSnap.exists()) {
             const referrerData = referrerSnap.data();
             const newReferralList = referrerData.referrals || [];
+
             if (!newReferralList.includes(userId)) {
                 newReferralList.push(userId);
-                await updateUserData(referrerId, { referrals: newReferralList });
-                
+
                 // Начисляем бонусы
-                const bonusAmount = 100; // Пример бонуса
-                await updateUserData(referrerId, { balance: referrerData.balance + bonusAmount });
-                showNotification(`You have been credited ${bonusAmount} coins for inviting a friend!`);
+                const bonusCoins = 100;
+                const bonusTickets = 1;
+
+                // Обновляем данные пригласившего пользователя
+                await updateUserData(referrerId, {
+                    referrals: newReferralList,
+                    balance: referrerData.balance + bonusCoins,
+                    tickets: referrerData.tickets + bonusTickets
+                });
+
+                showNotification(`Congratulations! You have been credited ${bonusCoins} coins and ${bonusTickets} tickets for inviting a friend!`);
+            } else {
+                showNotification('You have already been credited for this referral.');
             }
+        } else {
+            console.warn('Referrer does not exist.');
         }
+    } else {
+        console.log('No referrer ID found');
     }
 }
-
-document.addEventListener('DOMContentLoaded', async function() {
-    await handleReferral(); // Обработка рефералов при загрузке страницы
-    // Остальной код
-});
 
 async function updateReferralList() {
     const userData = await getUser(userId);
@@ -492,9 +505,6 @@ async function updateReferralList() {
     });
 }
 
-document.addEventListener('DOMContentLoaded', async function() {
-    await updateReferralList();
-});
 
 async function checkFirebaseConnection() {
     if (!db) {
@@ -664,6 +674,7 @@ async function confirmTask(taskId) {
     if (isConnected) {
         console.log('Firebase connected, updating user profile');
         await updateUserProfile();
+        await handleReferral(); // Добавляем вызов функции для обработки рефералов
     } else {
         console.error('Failed to connect to Firebase');
         showNotification('Error: Could not connect to the database');
