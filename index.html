@@ -351,50 +351,6 @@ try {
     console.error('Error initializing Firebase:', error);
 }
 
-async function registerUser(referrerId) {  
-    try {  
-        const userData = await getUser(userId);  
-        if (userData) {  
-            const { tickets, balance, referralProgress } = userData;  
-            let newBalance = balance;  
-            let newReferralProgress = referralProgress;  
-
-            if (referrerId) {  
-                const referrerData = await getUser(referrerId);  
-                if (referrerData) {  
-                    // Начисляем рефереру 1 тикет для Lucky-game и 100 монет  
-                    referrerData.tickets += 1;  
-                    referrerData.balance += 100;  
-                    referrerData.referralProgress += 1;  
-                    await updateUserData(referrerId, referrerData);  
-                } else {  
-                    showNotification('Referrer data not found!');  
-                    return false;  
-                }  
-            }  
-
-            const newUserData = {  
-                userId,  
-                tickets,  
-                balance: newBalance,  
-                taskCompleted: [false, false],  
-                referralProgress: newReferralProgress + 1  
-            };  
-
-            await createUser(newUserData);  
-            showNotification('Registration successful!');  
-            return true;  
-        } else {  
-            showNotification('User data not found!');  
-            return false;  
-        }  
-    } catch (error) {  
-        console.error('Error registering user:', error);  
-        showNotification('Error registering user!');  
-        return false;  
-    }  
-}  
-
 async function getTelegramUserData() {
     console.log('Getting Telegram user data');
     const urlParams = new URLSearchParams(window.location.search);
@@ -494,6 +450,51 @@ try {
 } catch (error) {
     console.error('Error initializing Firebase:', error);
 }
+
+async function handleReferral() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const referrerId = urlParams.get('start'); // Получаем ID пригласившего пользователя
+    
+    if (referrerId) {
+        // Обновляем рефералы пользователя
+        const referrerDoc = doc(db, 'users', referrerId);
+        const referrerSnap = await getDoc(referrerDoc);
+
+        if (referrerSnap.exists()) {
+            const referrerData = referrerSnap.data();
+            const newReferralList = referrerData.referrals || [];
+            if (!newReferralList.includes(userId)) {
+                newReferralList.push(userId);
+                await updateUserData(referrerId, { referrals: newReferralList });
+                
+                // Начисляем бонусы
+                const bonusAmount = 100; // Пример бонуса
+                await updateUserData(referrerId, { balance: referrerData.balance + bonusAmount });
+                showNotification(`You have been credited ${bonusAmount} coins for inviting a friend!`);
+            }
+        }
+    }
+}
+
+document.addEventListener('DOMContentLoaded', async function() {
+    await handleReferral(); // Обработка рефералов при загрузке страницы
+    // Остальной код
+});
+
+async function updateReferralList() {
+    const userData = await getUser(userId);
+    const referralList = userData.referrals || [];
+    const referralListElement = document.getElementById('referral-list');
+    
+    referralListElement.innerHTML = '';
+    referralList.forEach(referralId => {
+        referralListElement.innerHTML += `<li>User ${referralId}</li>`;
+    });
+}
+
+document.addEventListener('DOMContentLoaded', async function() {
+    await updateReferralList();
+});
 
 async function checkFirebaseConnection() {
     if (!db) {
