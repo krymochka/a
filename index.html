@@ -536,40 +536,45 @@ async function updateUserData(userId, updateData) {
     console.log('User data updated successfully');
 }
 
-        async function confirmTask(taskId) {
-            const userData = await getUser(userId);
-            if (userData && !userData.taskCompleted[taskId]) {
-                let { tickets, balance, taskCompleted } = userData;
+async function confirmTask(taskId) {  
+    const userData = await getUser(userId);  
+    if (userData && !userData.taskCompleted[taskId]) {  
+        let { tickets, balance, taskCompleted, referralProgress } = userData;  
 
-                const taskElement = document.getElementById(`task${taskId}`);
-                const btnConfirm = taskElement.querySelector('.btn-confirm');
-                btnConfirm.disabled = true;
-                btnConfirm.innerText = 'Confirmed!';
+        const taskElement = document.getElementById(`task${taskId}`);  
+        const btnConfirm = taskElement.querySelector('.btn-confirm');  
+        btnConfirm.disabled = true;  
+        btnConfirm.innerText = 'Confirmed!';  
 
-                setTimeout(async () => {
-                    let coinsEarned;
-                    switch (taskId) {
-                        case 1:
-                            coinsEarned = 300;
-                            tickets += 1;
-                            break;
-                        case 2:
-                            coinsEarned = 1000;
-                            tickets += 5;
-                            break;
-                    }
-                    balance += coinsEarned;
-                    taskCompleted[taskId] = true;
+        setTimeout(async () => {  
+            let coinsEarned;  
+            switch (taskId) {  
+                case 1:  
+                    coinsEarned = 300;  
+                    tickets += 1;  
+                    break;  
+                case 2:  
+                    if (referralProgress >= 5) {  
+                        coinsEarned = 1000;  
+                        tickets += 5;  
+                    } else {  
+                        showNotification('You need a referral progress of at least 5 to complete this task.');  
+                        return;  
+                    }  
+                    break;  
+            }  
+            balance += coinsEarned;  
+            taskCompleted[taskId] = true;  
 
-                    await updateUserData(userId, { tickets, balance, taskCompleted });
-                    updateTicketsDisplay(tickets);
-                    updateUserBalance(balance);
-                    showNotification(`Task completed! You earned ${coinsEarned} coins and tickets.`);
-                }, 3000);
-            } else {
-                showNotification('This task is already completed or user data not found!');
-            }
-        }
+            await updateUserData(userId, { tickets, balance, taskCompleted, referralProgress });  
+            updateTicketsDisplay(tickets);  
+            updateUserBalance(balance);  
+            showNotification(`Task completed! You earned ${coinsEarned} coins and tickets.`);  
+        }, 3000);  
+    } else {  
+        showNotification('This task is already completed or user data not found!');  
+    }  
+}
 
         function copyReferralLink() {
             const referralLinkInput = document.getElementById('referral-link-display');
