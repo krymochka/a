@@ -400,19 +400,21 @@ async function updateUserProfile() {
     if (!userData) {
         console.log('User not found in Firestore, creating new user');
         userData = {
-            id: userId,
-            username: telegramData.username,
-            photo_url: telegramData.photo_url,
-            tickets: 3,
-            balance: 450,
-            referralProgress: 0,
-            referrals: [],
-            taskCompleted: {1: false, 2: false}
-        };
+    id: userId,
+    username: telegramData.username,
+    photo_url: telegramData.photo_url,
+    tickets: 3,
+    balance: 450,
+    referralProgress: 0,
+    referrals: [],
+    taskCompleted: {1: false, 2: false},
+    isNewUser: true  // Добавьте это поле
+};
         try {
             console.log('Setting new user data in Firestore');
             await setUser(userId, userData);
             console.log('New user data set successfully');
+            await handleReferral();
         } catch (error) {
             console.error('Error setting new user data:', error);
             showNotification('Error creating user profile');
@@ -455,44 +457,59 @@ try {
 async function handleReferral() {
     console.log('Handling referral');
     const urlParams = new URLSearchParams(window.location.search);
-    const referrerId = urlParams.get('start'); // Получаем ID пригласившего пользователя
+    const referrerId = urlParams.get('start');
 
-    if (referrerId) {
+    if (referrerId && referrerId !== userId) {
         console.log(`Referrer ID: ${referrerId}`);
-        const userData = await getUser(userId); // Получаем данные текущего пользователя
+        const userData = await getUser(userId);
 
-        const referrerDoc = doc(db, 'users', referrerId);
-        const referrerSnap = await getDoc(referrerDoc);
+        if (userData.isNewUser) {
+            const referrerDoc = doc(db, 'users', referrerId);
+            const referrerSnap = await getDoc(referrerDoc);
 
-        if (referrerSnap.exists()) {
-            const referrerData = referrerSnap.data();
-            console.log('Referrer data:', referrerData);
+            if (referrerSnap.exists()) {
+                const referrerData = referrerSnap.data();
+                console.log('Referrer data:', referrerData);
 
-            const newReferralList = referrerData.referrals || [];
+                const newReferralList = referrerData.referrals || [];
 
-            if (!newReferralList.includes(userId)) {
-                newReferralList.push(userId);
+                if (!newReferralList.includes(userId)) {
+                    newReferralList.push(userId);
+                    const newBalance = referrerData.balance + 100;
+                    const newTickets = referrerData.tickets + 1;
+                    const newReferralProgress = (referrerData.referralProgress || 0) + 1;
 
-                // Обновляем данные реферера, увеличивая количество тикетов и коинов
-                await updateUserData(referrerId, {
-                    referrals: newReferralList,
-                    balance: referrerData.balance + 100, // Добавляем коины
-                    tickets: referrerData.tickets + 1    // Добавляем тикеты
-                });
-                console.log('Referrer data updated successfully');
+                    await updateUserData(referrerId, {
+                        referrals: newReferralList,
+                        balance: newBalance,
+                        tickets: newTickets,
+                        referralProgress: newReferralProgress
+                    });
+                    console.log('Referrer data updated successfully');
 
-                showNotification(`Congratulations! You have been credited with coins and tickets for inviting a friend!`);
+                    // Обновляем статус нового пользователя
+                    await updateUserData(userId, { isNewUser: false });
+
+                    showNotification(`Referral successful! Referrer credited with coins and tickets.`);
+                }
             } else {
-                showNotification('You have already been credited for this referral.');
+                console.warn('Referrer does not exist.');
             }
         } else {
-            console.warn('Referrer does not exist.');
+            console.log('User is not new, skipping referral process');
         }
     } else {
-        console.log('No referrer ID found');
+        console.log('No valid referrer ID found');
     }
 }
 
+async function updateReferrerUI() {
+    const userData = await getUser(userId);
+    updateTicketsDisplay(userData.tickets);
+    updateUserBalance(userData.balance);
+    updateReferralProgress(userData.referralProgress);
+    updateReferralList();
+}
 
 async function updateReferralList() {
     const userData = await getUser(userId);
