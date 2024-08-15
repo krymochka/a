@@ -458,42 +458,56 @@ async function handleReferral() {
     console.log('Handling referral');
     const urlParams = new URLSearchParams(window.location.search);
     const referrerId = urlParams.get('start');
+    console.log('URL referrerId:', referrerId);
+    console.log('Current userId:', userId);
 
     if (referrerId && referrerId !== userId) {
         console.log(`Referrer ID: ${referrerId}`);
         const userData = await getUser(userId);
+        console.log('Is user new:', userData.isNewUser);
 
         if (userData.isNewUser) {
-            const referrerDoc = doc(db, 'users', referrerId);
-            const referrerSnap = await getDoc(referrerDoc);
+            try {
+                const referrerDoc = doc(db, 'users', referrerId);
+                const referrerSnap = await getDoc(referrerDoc);
 
-            if (referrerSnap.exists()) {
-                const referrerData = referrerSnap.data();
-                console.log('Referrer data:', referrerData);
+                if (referrerSnap.exists()) {
+                    const referrerData = referrerSnap.data();
+                    console.log('Referrer data:', referrerData);
 
-                const newReferralList = referrerData.referrals || [];
+                    const newReferralList = referrerData.referrals || [];
 
-                if (!newReferralList.includes(userId)) {
-                    newReferralList.push(userId);
-                    const newBalance = referrerData.balance + 100;
-                    const newTickets = referrerData.tickets + 1;
-                    const newReferralProgress = (referrerData.referralProgress || 0) + 1;
+                    if (!newReferralList.includes(userId)) {
+                        newReferralList.push(userId);
+                        const newBalance = referrerData.balance + 100;
+                        const newTickets = referrerData.tickets + 1;
+                        const newReferralProgress = (referrerData.referralProgress || 0) + 1;
 
-                    await updateUserData(referrerId, {
-                        referrals: newReferralList,
-                        balance: newBalance,
-                        tickets: newTickets,
-                        referralProgress: newReferralProgress
-                    });
-                    console.log('Referrer data updated successfully');
+                        await updateUserData(referrerId, {
+                            referrals: newReferralList,
+                            balance: newBalance,
+                            tickets: newTickets,
+                            referralProgress: newReferralProgress
+                        });
+                        console.log('Referrer data updated successfully');
 
-                    // Обновляем статус нового пользователя
-                    await updateUserData(userId, { isNewUser: false });
+                        // Обновляем статус нового пользователя
+                        await updateUserData(userId, { isNewUser: false });
 
-                    showNotification(`Referral successful! Referrer credited with coins and tickets.`);
+                        showNotification(`Referral successful! Referrer credited with coins and tickets.`);
+                        
+                        // Обновляем UI для реферера
+                        await updateReferrerUI();
+                    } else {
+                        console.log('User is already a referral');
+                        showNotification('This user is already your referral');
+                    }
+                } else {
+                    console.warn('Referrer does not exist.');
                 }
-            } else {
-                console.warn('Referrer does not exist.');
+            } catch (error) {
+                console.error('Error updating referrer data:', error);
+                showNotification('An error occurred while processing the referral');
             }
         } else {
             console.log('User is not new, skipping referral process');
@@ -662,13 +676,13 @@ async function confirmTask(taskId) {
         }
 
         function showNotification(message) {
-            const notification = document.getElementById('notification');
-            notification.innerText = message;
-            notification.style.display = 'block';
-            setTimeout(() => {
-                notification.style.display = 'none';
-            }, 3000);
-        }
+    const notification = document.getElementById('notification');
+    notification.innerText = message;
+    notification.style.display = 'block';
+    setTimeout(() => {
+        notification.style.display = 'none';
+    }, 3000);
+}
 
         function showPrize(prize) {
             const prizeDisplay = document.getElementById('prize-display');
