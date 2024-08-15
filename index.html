@@ -351,31 +351,6 @@ try {
     console.error('Error initializing Firebase:', error);
 }
 
-async function getTelegramUserData() {
-    console.log('Getting Telegram user data');
-    const urlParams = new URLSearchParams(window.location.search);
-    userId = urlParams.get('user_id'); // Устанавливаем глобальный userId
-    const username = urlParams.get('username');
-    const photo_url = urlParams.get('photo_url');
-
-    console.log('URL parameters:', { userId, username, photo_url });
-
-    if (!userId) {
-        console.warn('User ID not found in URL parameters, generating temporary ID');
-        return {
-            id: 'temp_' + Math.random().toString(36).substr(2, 9),
-            username: username || 'Guest',
-            photo_url: photo_url || 'https://example.com/default-avatar.jpg'
-        };
-    }
-
-    return {
-        id: userId,
-        username: username || 'Guest',
-        photo_url: photo_url || 'https://example.com/default-avatar.jpg'
-    };
-}
-
 async function updateUserProfile() {
     console.log('Updating user profile');
     const telegramData = await getTelegramUserData();
@@ -387,7 +362,7 @@ async function updateUserProfile() {
         return;
     }
     
-    userId = telegramData.id; // Устанавливаем userId после получения данных
+    userId = telegramData.id;
     let userData;
     try {
         console.log('Fetching user data from Firestore');
@@ -400,27 +375,28 @@ async function updateUserProfile() {
     if (!userData) {
         console.log('User not found in Firestore, creating new user');
         userData = {
-    id: userId,
-    username: telegramData.username,
-    photo_url: telegramData.photo_url,
-    tickets: 3,
-    balance: 450,
-    referralProgress: 0,
-    referrals: [],
-    taskCompleted: {1: false, 2: false},
-    isNewUser: true  // Добавьте это поле
-};
+            id: userId,
+            username: telegramData.username,
+            photo_url: telegramData.photo_url,
+            tickets: 3,
+            balance: 450,
+            referralProgress: 0,
+            referrals: [],
+            taskCompleted: {1: false, 2: false},
+            isNewUser: true
+        };
         try {
             console.log('Setting new user data in Firestore');
             await setUser(userId, userData);
             console.log('New user data set successfully');
-            await handleReferral();
         } catch (error) {
             console.error('Error setting new user data:', error);
             showNotification('Error creating user profile');
             return;
         }
     }
+
+    await handleReferral(); // Вызываем handleReferral() для всех пользователей
 
     console.log('Updating UI with user data');
     document.getElementById('user-avatar').src = userData.photo_url;
